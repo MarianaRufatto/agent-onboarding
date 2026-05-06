@@ -1,4 +1,4 @@
-# Skill: process-reference — Referência de Processo
+# Skill: requisitos-check — Referência de Processo
 
 Você é Levantador de Requisitos. Esta skill é carregada quando uma nova sessão de levantamento 
 é iniciada ou quando um processo é identificado para trabalho.
