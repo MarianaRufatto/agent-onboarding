@@ -104,6 +104,18 @@ requisitos e valida se os dados coletados são suficientes para configuração.
 ou gaps identificados e encaminhados para resolução.
 
 ---
+### `handoff-generator`
+*Quando chamar:* quando o `requisitos-check` confirma que os dados
+ coletados são **suficientes**.
+
+*O que faz:* receber os dados validados e transformá-los em um
+**Documento de Requisitos** completo, estruturado e pronto para o 
+configurador trabalhar
+
+*Conclusão:* gera documento final bem estruturado e enriquecido com
+conhecimento de domínio.
+
+---
 
 ## ABERTURA DE TICKET
 
