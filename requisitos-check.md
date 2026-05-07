@@ -24,9 +24,10 @@ Você opera em **três modos** conforme o contexto da sessão:
 2. Selecionar o processo a trabalhar ← aguardar confirmação
 3. Verificar requisitos existentes → determinar MODO de operação
 4. [MODO A/B] Conduzir levantamento com o cliente ou gerar roteiro
-5. [MODO C] Carregar schema de referência da cidade modelo ← SEM TEXTO
-6. [MODO C] Mapear o que precisa ser configurado ← SEM TEXTO
-7. Conduzir alinhamento / encerrar e acionar handoff ao configurador
+5. Validar suficiência dos requisitos via `references/perguntas-por-categoria.md` ← SEM TEXTO
+6. [MODO C] Carregar schema de referência da cidade modelo ← SEM TEXTO
+7. [MODO C] Mapear o que precisa ser configurado ← SEM TEXTO
+8. Conduzir alinhamento / encerrar e acionar handoff ao configurador
 
 Nenhuma etapa é opcional. Se uma etapa falhar, reporte e pare.
 
@@ -266,6 +267,89 @@ Registrar no documento:
 2. Buscar legislação federal/estadual aplicável (web search)
 3. Solicitar à implantadora: legislação municipal? Formulários ou fluxogramas atuais?
 4. Gerar roteiro estruturado pelos 6 pilares usando `references/perguntas-por-categoria.md`
+
+---
+
+## Etapa 5 — Validar Suficiência dos Requisitos
+
+Esta etapa é executada **sempre**, independente de como os requisitos chegaram
+(entrevista via `requirements-interview`, leitura via `ticket-reader` ou qualquer
+outra fonte). É aqui que o `requisitos-check` usa o `references/perguntas-por-categoria.md`
+como régua de validação.
+
+### Passo 1 — Identificar o tipo do processo
+
+Com base nos requisitos recebidos, identificar a qual seção do
+`references/perguntas-por-categoria.md` o processo pertence.
+Usar o **Mapa de Identificação** no início do arquivo de referência:
+consultar pela descrição funcional do processo, não pelo nome.
+
+Se o processo não tiver seção específica no arquivo: usar os **6 pilares universais**
+como régua de validação.
+
+### Passo 2 — Checar cobertura dos 6 pilares
+
+Para cada pilar, verificar se os requisitos recebidos contêm resposta suficiente:
+
+| Pilar | Coberto? | Gaps identificados |
+|---|---|---|
+| 1 — Escopo e Identificação | ☐ Sim / ☐ Parcial / ☐ Não | [listar o que falta] |
+| 2 — Formulário do Requerimento | ☐ Sim / ☐ Parcial / ☐ Não | [listar o que falta] |
+| 3 — Regras de Negócio e Fontes | ☐ Sim / ☐ Parcial / ☐ Não | [listar o que falta] |
+| 4 — Fluxo do Processo | ☐ Sim / ☐ Parcial / ☐ Não | [listar o que falta] |
+| 5 — Documentos Gerados | ☐ Sim / ☐ Parcial / ☐ Não | [listar o que falta] |
+| 6 — Insumos de Configuração | ☐ Sim / ☐ Parcial / ☐ Não | [listar o que falta] |
+
+### Passo 3 — Checar perguntas específicas do tipo de processo
+
+Carregar a seção correspondente no `references/perguntas-por-categoria.md`.
+Para cada bloco de perguntas da seção, verificar se os requisitos recebidos
+já respondem aquela questão.
+
+Marcar cada pergunta como:
+- **Respondida** — requisito recebido cobre a questão
+- **Parcial** — resposta existe mas está vaga ou incompleta
+- **Gap** — não há resposta para essa questão nos requisitos recebidos
+
+Questões marcadas como ⚠️ ou 🔧 nos requisitos recebidos são automaticamente
+tratadas como **Parcial** — precisam de validação antes do handoff.
+
+### Passo 4 — Determinar o caminho de saída
+
+**Se SUFICIENTE** — todos os pilares cobertos e sem gaps críticos:
+- Registrar: `STATUS: suficiente`
+- Acionar `handoff-generator` com o Documento de Requisitos completo
+- Seguir para Etapa 6 (MODO C) se configuração for o próximo passo
+
+**Se GAPS** — um ou mais pilares incompletos ou questões sem resposta:
+- Registrar: `STATUS: gaps`
+- Montar lista de gaps (ver formato abaixo)
+- Acionar `clarification-request` com **apenas** as questões faltantes
+- Não repetir o que já foi respondido
+
+### Formato da lista de gaps para `clarification-request`
+
+```
+PROCESSO: [nome do processo]
+GAPS IDENTIFICADOS:
+
+Pilar [número] — [nome do pilar]:
+- [questão específica sem resposta 1]
+- [questão específica sem resposta 2]
+
+Seção [X] — [nome da seção no perguntas-por-categoria]:
+- [bloco/pergunta não coberta 1]
+- [bloco/pergunta não coberta 2]
+
+Pontos a validar (⚠️):
+- [descrição do ponto em aberto]
+
+Pontos técnicos pendentes (🔧):
+- [descrição do ponto técnico]
+```
+
+> O `clarification-request` usa essa lista para perguntar **somente** o que está faltando,
+> sem repassar pelo que já foi coletado.
 
 ---
 
