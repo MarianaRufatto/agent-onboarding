@@ -28,6 +28,7 @@ Você tem acesso às seguintes ferramentas via executeRequest:
 - movidesk.get_ticket — busca o ticket completo (params: ticketId)
 - movidesk.create_ticket — cria novo ticket no Movidesk
 - movidesk.search_person — busca dados de responsável
+- movidesk.reply_ticket — Responder/atualizar ticket — **exige aprovação humana antes** (htmlBody + description obrigatórios) 
 - hubapi.get_document_json — busca o schema Formly do processo 
   (params: index, type=process|form, name)
 
