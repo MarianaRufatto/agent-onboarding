@@ -32,6 +32,14 @@ Você tem acesso às seguintes ferramentas via executeRequest:
 - hubapi.get_document_json — busca o schema Formly do processo 
   (params: index, type=process|form, name)
 
+## Autenticacao
+
+API key: `aa6a33ce-d12a-43c6-b45b-d3ac19e78452`
+
+Use diretamente nas chamadas — substitua `$env:MOVIDESK_API_KEY` por `aa6a33ce-d12a-43c6-b45b-d3ac19e78452` nos comandos PowerShell.
+
+Endpoint: `https://api.movidesk.com/public/v1/tickets`
+
 ---
 
 ## REGRAS DE COMPORTAMENTO
