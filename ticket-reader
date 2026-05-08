@@ -3,12 +3,50 @@
 Esta skill é carregada quando há um ticketId disponível no chat,
 na mensagem do servidor ou no histórico da conversa.
 
+---
+
+## CANAL DE COMUNICAÇÃO — Regras obrigatórias
+
+Detecte o canal antes de qualquer resposta.
+
+### Slack
+- Negrito: *texto* — UM asterisco de cada lado
+- PROIBIDO: **texto** — dois asteriscos não renderizam, aparecem como símbolos
+- Listas: hífen simples + espaço
+- Proibido: ##, >, ```, **, ___
+
+Correto: *Município:* Formiga - MG
+Errado:  **Município:** Formiga - MG
+
+### WhatsApp
+- Texto completamente limpo, sem nenhum símbolo de formatação
+- Mensagens curtas, uma informação por vez
+
+### E-mail / Ticket
+- **texto** para negrito funciona
+- Listas e títulos são aceitos
+
+---
+
+## TERMOS TÉCNICOS — nunca aparecem em mensagens visíveis
+
+Estes itens são internos. Nunca aparecem no resumo apresentado:
+
+| Nunca mostrar | O que fazer |
+|---|---|
+| ObjectId / ObjectID | Registrar internamente na memória de trabalho. Não mencionar no resumo. |
+| schema, JSON, Formly | — nunca mencionar |
+| type, key, fieldGroup | — nunca mencionar |
+| Pendências técnicas internas | Registrar internamente. Não listar no resumo. |
+
+---
+
 ## FLUXO OBRIGATÓRIO — Execute nesta ordem, sem pular etapas
 
 1. Carregar o ticket ← SEM TEXTO
 2. Extrair e estruturar as informações ← SEM TEXTO
 3. Validar se o contexto está completo ← SEM TEXTO
-4. Apresentar resumo ao implantador e aguardar confirmação
+4. Apresentar resumo e aguardar confirmação
 5. Sinalizar conclusão para acionar o requisitos-check
 
 Nenhuma etapa é opcional. Se uma etapa falhar, reporte e pare.
@@ -21,9 +59,9 @@ executeRequest → movidesk.get_ticket
   params:
     ticketId: {id identificado no chat ou histórico}
 
-Se o ticket não existir: informe ao implantador e pare.
-  "Não encontrei o ticket #{ID} no Movidesk. Pode verificar o número
-  ou compartilhar o link diretamente?"
+Se o ticket não existir:
+"Não encontrei o ticket #{ID} no Movidesk. Pode verificar o número
+ou compartilhar o link diretamente?"
 
 Se a requisição falhar 2 vezes consecutivas com o mesmo erro:
 pare e peça intervenção manual ao implantador.
@@ -32,31 +70,34 @@ pare e peça intervenção manual ao implantador.
 
 ## Etapa 2 — Extrair e estruturar as informações
 
-Com o ticket carregado, extraia:
+Com o ticket carregado, extraia os seguintes dados e registre internamente:
 
 - subject — assunto/título do ticket
 - clients — cliente/prefeitura vinculada
 - owner — responsável pelo ticket
 - actions[].htmlDescription — corpo com tarefas e histórico
-- customFieldValues — campos customizados (pode conter ObjectId ou ambiente)
+- customFieldValues — campos customizados
 
-Para cada campo relevante encontrado, registre:
+Registre internamente (não exibir no resumo):
 
-- Município e UF (extraído do subject ou clients)
-- Responsável da prefeitura (extraído de clients ou actions)
-- Implantador responsável (extraído de owner)
-- Processos a trabalhar (extraído das actions ou customFieldValues)
-- ObjectId(s) encontrados — procure hex de 24 chars nas actions,
-  customFieldValues ou URLs no padrão:
-  aprova.com.br/.../([a-fA-F0-9]{24})
-- Anexos referenciados — liste nome e tipo, não tente baixar.
-  Registre como: "Anexo: {fileName} — {contentType} — consultar no Movidesk"
+| Dado | Fonte | Uso |
+|---|---|---|
+| Município e UF | subject ou clients | exibir no resumo |
+| Responsável da prefeitura | clients ou actions | exibir no resumo |
+| Implantador responsável | owner | exibir no resumo |
+| Processos a trabalhar | actions ou customFieldValues | exibir no resumo |
+| ObjectId(s) — hex de 24 chars nas actions, customFieldValues ou URLs no padrão aprova.com.br/.../([a-fA-F0-9]{24}) | qualquer campo | registrar na memória, NÃO exibir |
+| Anexos | actions | exibir apenas nomes no resumo |
+
+Se ObjectId não for encontrado: registrar como pendência interna.
+O requisitos-check tratará isso na etapa de busca do schema.
+Não mencionar ObjectId em nenhuma mensagem.
 
 ---
 
 ## Etapa 3 — Validar se o contexto está completo
 
-Verifique se os seguintes dados foram extraídos:
+Verifique internamente se os seguintes dados foram extraídos:
 
 - [ ] Município identificado
 - [ ] Responsável da prefeitura identificado
@@ -65,43 +106,75 @@ Verifique se os seguintes dados foram extraídos:
 
 Para cada item não encontrado: registre como pendência.
 
-Se houver pendências críticas (município ou processos ausentes):
-notifique o implantador antes de avançar.
-  "Não consegui identificar {item} no ticket #{ID}.
-  Pode confirmar essa informação para eu prosseguir?"
+Se município ou processos estiverem ausentes, pergunte antes de avançar:
+"Não consegui identificar {item} no ticket #{ID}.
+Pode confirmar essa informação para eu prosseguir?"
 
-ObjectId ausente não bloqueia esta skill — registre como pendência
-e o requisitos-check tratará na etapa de busca do schema.
+ObjectId ausente não bloqueia — registre internamente e siga.
 
 ---
 
-## Etapa 4 — Apresentar resumo ao implantador
+## Etapa 4 — Apresentar resumo e aguardar confirmação
 
-Após extração e validação, apresente o resumo:
+Apresente apenas informações de negócio — sem termos técnicos, sem ObjectId,
+sem lista de pendências técnicas. Adapte o formato ao canal detectado.
 
-"Ticket #{ID} carregado. Aqui está o que extraí:
+### Formato para Slack:
+
+Ticket #{ID} carregado. Aqui está o que extraí:
+
+*Município:* {município} — {UF}
+*Responsável:* {nome} ({contato})
+*Implantador:* {nome}
+*Processos:* {lista}
+*Anexos:* {lista de nomes, se houver}
+
+[Se houver informações faltando no ticket]:
+Não encontrei no ticket: {lista em linguagem simples, ex: "contato do responsável"}.
+Podemos prosseguir assim ou prefere complementar?
+
+Podemos iniciar o levantamento?
+
+### Formato para WhatsApp:
+
+Ticket {ID} carregado!
+
+Município: {município} - {UF}
+Responsável: {nome}
+Processos: {lista}
+
+[Se faltarem informações]: Não encontrei {item} no ticket. Podemos seguir assim?
+
+Podemos começar?
+
+### Formato para E-mail / Ticket:
+
+Ticket #{ID} carregado. Aqui está o resumo:
+
 - Município: {município} — {UF}
 - Responsável: {nome} ({contato})
 - Implantador: {nome}
 - Processos: {lista}
-- ObjectId(s): {lista ou 'não localizado — pendência'}
-- Pendências: {lista ou 'nenhuma'}
+- Anexos: {lista, se houver}
 
-Podemos iniciar o levantamento?"
+[Se faltarem informações]:
+Informações não encontradas no ticket: {lista simples}.
+Podemos prosseguir ou prefere complementar?
 
-Aguarde confirmação antes de sinalizar conclusão.
+Podemos iniciar o levantamento?
 
 ---
 
 ## Etapa 5 — Sinalizar conclusão
 
-Após confirmação do implantador, registre na memória de trabalho:
+Após confirmação, registre na memória de trabalho:
 
 - ticketId ativo: {ID}
 - Município: {município} — {UF}
 - Responsável: {nome} ({contato})
 - Implantador: {nome}
 - Processos pendentes: {lista ordenada conforme cronograma ou ticket}
-- ObjectId(s): {lista ou pendência registrada}
+- ObjectId(s): {lista ou "pendência interna — buscar no requisitos-check"}
+- Anexos referenciados: {lista com nome e tipo — consultar no Movidesk}
 
 Skill concluída — orquestrador aciona o requisitos-check.
