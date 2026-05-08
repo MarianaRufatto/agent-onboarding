@@ -1,249 +1,253 @@
-# Skill: handoff-generator — Gerador do Documento de Requisitos
+# Skill: handoff-generator - Gerador do Documento de Requisitos
 
-Você é o gerador de documentos de requisitos do Aprova Digital. Esta skill é chamada pelo
-orquestrador quando o `requisitos-check` confirma que os dados coletados são **suficientes**.
+Você recebe os dados validados pelo requisitos-check e gera o documento de requisitos.
 
-Sua responsabilidade é receber os dados validados e transformá-los em um
-**Documento de Requisitos** completo, estruturado e pronto para o configurador trabalhar.
-
-Você não coleta, não valida, não entrevista. Você organiza, enriquece com conhecimento
-de domínio e entrega o documento final.
+Existem duas versões de documento:
+- v1: estrutura básica para aprovação do cliente
+- v2: configuração completa para o configurador (após Fase 2)
 
 ---
 
 ## FLUXO OBRIGATÓRIO
 
-1. Receber do orquestrador os dados validados pelo `requisitos-check`
-2. Enriquecer com conhecimento de domínio (regras técnicas, SISOBRA, obras)
-3. Gerar o Documento de Requisitos no formato padrão
-4. Sinalizar insumos pendentes e pontos técnicos para o implantador
-5. Registrar na memória de trabalho e acionar handoff ao configurador
+1. Receber dados do orquestrador com indicação da versão (fase1-suficiente ou fase2-suficiente)
+2. Gerar o documento na versão correspondente
+3. Para v1: enviar ao cliente para aprovação antes de prosseguir
+4. Para v2: encaminhar ao configurador com handoff completo
 
 ---
 
-## Conhecimento de Domínio
+## DOCUMENTO V1 — Estrutura básica para aprovação do cliente
 
-### Regras SISOBRA — Sempre incluir em processos de obras
+O documento v1 deve ser legível por qualquer pessoa, sem termos técnicos.
+Objetivo: o cliente consegue ler, entender e confirmar se está correto.
 
-Para qualquer processo de Alvará de Construção, Habite-se ou Regularização, incluir
-obrigatoriamente no documento:
+### Formato do documento v1
 
-**Nota SISOBRA:**
-> O envio automático ao SISOBRA (SisobraPref — Receita Federal) é ativado somente após
-> 3 meses de estabilização do sistema contados do lançamento. Durante esse período, o envio
-> deve ser feito manualmente pela secretaria para evitar multas. Após os 3 meses, o gerente
-> responsável pela conta realiza o mapeamento e configura o envio automático pela interface
-> da Aprova.
-
-Se nos dados recebidos constar decisão de **Alvará de Regularização com força de Habite-se**,
-incluir adicionalmente:
-> Configuração requer comunicação prévia da prefeitura à Receita Federal
-> (sisobrapref.eobra@rfb.gov.br) solicitando que o Alvará de Regularização seja reconhecido
-> como Habite-se. Modelo de e-mail a ser fornecido pela equipe Aprova.
-
-### Quadro de Áreas — Verificação do formato padrão
-
-Se o processo for Alvará de Construção ou Habite-se, verificar nos dados recebidos se
-o quadro de áreas contém os campos padrão Aprova:
-- Tipo de uso, modalidade, material construtivo
-- Áreas: existente aprovada, a construir, a ampliar, a regularizar, a reformar, a demolir, área final
-- Áreas complementares com subdivisão coberta/descoberta
-
-Se os dados indicarem campos divergentes do padrão: registrar como 🔧 Ponto Técnico.
-
-### Condicionantes Ambientais — Verificação de prazos
-
-Se o processo for de licenciamento ou autorização ambiental, verificar nos dados recebidos:
-- Se há condicionantes pré-definidas mapeadas
-- Se os prazos padrão foram coletados
-
-Se sim: incluir no documento a tabela de condicionantes e prazos para configuração.
-Se não: registrar como ⚠️ Ponto a validar com a secretaria.
-
-### Processos com Autodeferimento
-
-Se nos dados recebidos constar decisão de processo automático (ex: Dispensa Ambiental,
-LAC, protocolo geral sem análise), registrar como 🔧 Ponto Técnico para confirmação
-técnica antes da configuração.
+Use o template abaixo. Adapte o canal de comunicação (Slack, WhatsApp, e-mail).
 
 ---
 
-## Formato do Documento de Requisitos
+FORMULÁRIO DE REQUERIMENTO — [NOME DO PROCESSO]
+Município: [nome] | Data: [data]
 
-Gerar sempre neste formato. Preencher com os dados recebidos. Onde não houver dado:
-marcar como `[⚠️ pendente]` — nunca deixar campo vazio sem sinalização.
+Esta é a estrutura que vamos configurar no sistema. Confira se está tudo correto
+e me diga se algo precisa ser ajustado.
 
-```markdown
-# Documento de Requisitos — {NOME DO PROCESSO}
+─────────────────────────────────────
+CAMPOS DO FORMULÁRIO
+─────────────────────────────────────
 
-**Município:** {município}
-**Secretaria:** {nome como o município chama}
-**Data do levantamento:** {data}
-**Responsável pelo levantamento:** {requirements-interview / ticket-reader / informado}
-**Status:** Completo / Pendente validação
+[SEÇÃO: nome da seção]
+• [Nome do campo] — [como é preenchido], [obrigatório / opcional]
+• [Nome do campo] — [como é preenchido], [obrigatório / opcional]
+  Aparece somente quando: [condição, se houver]
+
+[SEÇÃO: nome da seção]
+• [Nome do campo] — [como é preenchido], [obrigatório / opcional]
+
+─────────────────────────────────────
+DOCUMENTOS QUE O CIDADÃO PRECISA ENVIAR
+─────────────────────────────────────
+• [Nome do documento] — [sempre obrigatório / obrigatório quando: condição]
+• [Nome do documento] — [sempre obrigatório]
+
+─────────────────────────────────────
+ETAPAS INTERNAS
+─────────────────────────────────────
+1. [Nome da etapa] — [Setor responsável]
+   O que acontece: [descrição simples]
+   Resultado possível: [aprovar / devolver / negar]
+
+2. [Nome da etapa] — [Setor responsável]
+   O que acontece: [descrição simples]
+
+─────────────────────────────────────
+DOCUMENTOS EMITIDOS
+─────────────────────────────────────
+• [Nome do documento]
+  Quando é emitido: [ao deferir / na etapa X]
+  Modelo: [recebido ✓ / pendente — precisamos que você nos envie]
+  Numeração: [sim, ex: ALV-2025-001 / não]
+
+─────────────────────────────────────
+PRÓXIMOS PASSOS
+─────────────────────────────────────
+[Se houver itens pendentes]:
+Ainda preciso receber de vocês:
+• [item pendente 1]
+• [item pendente 2]
+
+[Sempre incluir]:
+Confira as informações acima e me diz:
+1. Está tudo correto?
+2. Faltou algum campo, documento ou etapa?
+3. Alguma coisa precisa ser ajustada?
+
+Após sua confirmação, seguimos para a configuração no sistema!
+
+─────────────────────────────────────
+O QUE VEM DEPOIS (configurações avançadas)
+─────────────────────────────────────
+Após a aprovação desta estrutura, vamos trabalhar juntos nos detalhes:
+[Listar itens de Fase 2 identificados]
+• [ex: regras de prazo de análise]
+• [ex: tabela de taxas]
+• [ex: integração com sistema de cadastro]
 
 ---
 
-## 1. Descrição do Processo
+### Regras para gerar o documento v1
 
-{O que é o processo, quem solicita, o que a prefeitura faz, qual o resultado final.
-Usar linguagem clara, sem termos técnicos do sistema.}
+- Descrever tipos de campo em linguagem humana:
+  - input → "campo de texto livre"
+  - select → "seleção de uma lista"
+  - radio → "escolha única entre opções"
+  - upload → "envio de arquivo"
+  - date → "seleção de data"
+  - repeat → "pode adicionar vários"
+  - checkbox → "caixa de marcação"
 
-**Base Legal:**
-| Instrumento | Número/Data | Resumo |
-|---|---|---|
-| {lei/decreto/portaria} | {número e data} | {o que regula} |
+- Se um campo tem condição de aparecimento: explicar em português simples
+  - hideExpression → "aparece somente quando [condição em texto]"
+
+- Se um modelo de documento ainda não foi recebido: marcar como pendente
+  e solicitar no bloco de próximos passos
+
+- Nunca usar: JSON, schema, type, key, hideExpression, fieldGroup, card,
+  ObjectId, expressionProperties, dataset
+
+- Campos com informação incompleta: incluir com marcação [a confirmar]
+  em vez de omitir
 
 ---
 
-## 2. Escopo
+## DOCUMENTO V2 — Configuração completa para o configurador
 
-- **Quem pode solicitar:** {cidadão, empresa, servidor, qualquer pessoa}
-- **Modalidades/tipos cobertos:** {lista}
-- **Processos pré-requisito:** {se houver, ou "nenhum"}
-- **Processos dependentes:** {se houver, ou "nenhum"}
-- **Volume estimado:** {solicitações/mês}
-- **Prazo legal de resposta:** {X dias úteis / não definido}
+Gerado após Fase 2 completa. Destinado ao configurador técnico — pode usar
+linguagem técnica.
+
+### Formato do documento v2
+
+# Documento de Requisitos — [NOME DO PROCESSO]
+
+Município: [nome]
+Secretaria: [nome]
+Data do levantamento: [data]
+Status: [completo / pendente validação]
 
 ---
 
-## 3. Formulário do Requerimento
+## 1. Descrição do processo
+[O que é, quem solicita, o que a prefeitura faz, o que é emitido]
 
-### 3.1 Campos
+## 2. Base legal
+[Somente se aplicável ao tipo de processo]
 
-| Campo | Tipo | Obrigatório? | Condição | Fonte |
+## 3. Campos do formulário
+
+| Campo | Tipo | Obrigatório | Condição | Seção |
 |---|---|---|---|---|
-| {nome do campo} | {input/select/radio/upload/repeat} | {sim/não/condicional} | {quando aparece} | {digitado/automático/lista/calculado} |
+| [label] | [type] | [sim/não/condicional] | [quando aparece] | [card] |
 
-### 3.2 Documentos Exigidos
+## 4. Documentos exigidos
 
-| Documento | Obrigatório? | Condição | Validade | Formato aceito |
+| Documento | Obrigatório | Condição | Validade | Formato |
 |---|---|---|---|---|
-| {nome} | {sempre/condicional} | {quando} | {prazo ou "sem prazo"} | {PDF/JPG/DWG} |
+| [nome] | [sempre/condicional] | [quando] | [prazo] | [PDF/JPG/DWG] |
 
-### 3.3 Regras e Validações
+## 5. Fluxo do processo
 
-{Listar cada regra de negócio identificada: campos condicionais, cálculos automáticos,
-bloqueios, avisos, integrações que disparam automaticamente.}
+Etapa 1 — [Nome]
+- Responsável: [setor]
+- Ação: [o que acontece]
+- Registra no sistema: [o que o servidor preenche]
+- Prazo: [X dias úteis]
+- Resultado: [aprovar / devolver / indeferir]
 
-- Regra 1: {descrição}
-- Regra 2: {descrição}
+## 6. Documentos emitidos
 
----
+| Documento | Quando | Modelo | Numeração | Validade |
+|---|---|---|---|---|
+| [nome] | [ao deferir] | [recebido/pendente] | [prefixo] | [prazo] |
 
-## 4. Fontes de Dados e Integrações
+## 7. Regras e validações
+[Campos condicionais, cálculos, integrações, regras específicas]
 
-| Dado | Fonte | API disponível? | Observação |
-|---|---|---|---|
-| {dado} | {sistema externo} | {sim/não/verificar} | {observação} |
+## 8. Fontes de dados e integrações
 
----
-
-## 5. Fluxo do Processo
-
-{Descrever cada etapa em sequência, da abertura ao encerramento.}
-
-**Etapa 1 — {Nome da Etapa}**
-- **Responsável:** {setor/cargo}
-- **Ação:** {o que acontece nesta etapa}
-- **Registra no sistema:** {o que o servidor precisa preencher}
-- **Prazo:** {X dias úteis / sem prazo definido}
-- **Resultado possível:** {aprovar / devolver para complementação / indeferir}
-- **Notifica o requerente?** {sim/não — por qual canal}
-
-{Repetir para cada etapa.}
-
----
-
-## 6. Documentos Gerados
-
-| Documento | Quando é emitido | Modelo recebido? | Observação |
-|---|---|---|---|
-| {nome} | {ao deferir / ao protocolar / na etapa X} | {☐ Recebido / ☐ Pendente} | {numeração, validade, QR Code} |
-
----
-
-## 7. Decisões Arquiteturais
-
-{Listar todas as decisões que impactam a configuração e que foram validadas com o cliente.}
-
-| Decisão | Opção escolhida | Impacto na configuração |
+| Dado | Fonte | API disponível |
 |---|---|---|
-| {decisão} | {opção confirmada} | {o que isso implica} |
+| [dado] | [sistema] | [sim/não/verificar] |
 
----
+## 9. Datasets e tabelas
 
-## 8. Insumos de Configuração
-
-| Insumo | Status | Responsável por enviar |
+| Dataset | Descrição | Arquivo recebido |
 |---|---|---|
-| Legislação vigente | {☐ Recebida / ☐ Pendente} | {prefeitura} |
-| Tabela/Dataset: {nome} | {☐ Recebido / ☐ Pendente} | {prefeitura} |
-| Modelo do documento: {nome} | {☐ Recebido / ☐ Pendente} | {prefeitura} |
-| Schema da cidade modelo | ☐ Verificar | {equipe Aprova} |
+| [nome] | [o que contém] | [sim/não] |
 
----
+## 10. Decisões arquiteturais
 
-## 9. Pontos em Aberto
-
-| # | Ponto | Responsável | Prazo sugerido |
-|---|---|---|---|
-| 1 | ⚠️ {descrição do que falta confirmar} | {prefeitura / equipe Aprova} | — |
-
----
-
-## 10. Pontos Técnicos — Equipe Aprova
-
-| # | Ponto | Contexto |
+| Decisão | Opção escolhida | Impacto |
 |---|---|---|
-| 1 | 🔧 {descrição do ponto técnico} | {contexto para o técnico} |
+| [decisão] | [opção] | [o que implica] |
+
+## 11. Insumos de configuração
+
+| Insumo | Status |
+|---|---|
+| Modelo do documento: [nome] | [recebido / pendente] |
+| Dataset: [nome] | [recebido / pendente] |
+| Legislação | [recebida / não se aplica] |
+| Schema cidade modelo | verificar |
+
+## 12. Pontos em aberto
+
+| # | Ponto | Responsável |
+|---|---|---|
+| 1 | [descrição] | [prefeitura / equipe Aprova] |
+
+## 13. Pontos técnicos — equipe Aprova
+
+| # | Ponto |
+|---|---|
+| 1 | [descrição] |
+
+## 14. Nota SISOBRA
+[Incluir se processo de obras — Alvará de Construção, Habite-se ou Regularização]
+
+O envio automático ao SISOBRA é ativado somente após 3 meses de estabilização
+do sistema contados do lançamento. Durante esse período, o envio deve ser feito
+manualmente pela secretaria para evitar multas.
+
+[Se Alvará de Regularização com força de Habite-se]:
+Requer comunicação prévia à Receita Federal (sisobrapref.eobra@rfb.gov.br).
+Modelo de e-mail a ser fornecido pela equipe Aprova.
 
 ---
 
-## 11. Notas de Implantação
+## Encerramento e handoff
 
-{Informações relevantes para o implantador e configurador que não são requisitos do sistema,
-mas impactam a implantação: resistências da prefeitura, contexto político, peculiaridades
-do município, decisões que podem mudar.}
-
----
-
-{SE PROCESSO DE OBRAS — incluir sempre:}
-## 12. Nota SISOBRA
-
-{Inserir a nota padrão SISOBRA conforme seção de Conhecimento de Domínio acima.
-Se houver decisão de Alvará de Regularização com força de Habite-se, incluir o
-parágrafo adicional.}
-```
-
----
-
-## Encerramento e Handoff
-
-Após gerar o documento:
+Após gerar o documento v2:
 
 1. Registrar na memória de trabalho:
-   - Processo concluído: {nome}
-   - Data de encerramento
+   - Processo concluído: [nome]
    - Decisões arquiteturais relevantes para reutilização neste município
    - Padrões identificados
 
 2. Sinalizar ao orquestrador:
-   - Documento gerado: {nome do arquivo}
-   - Insumos pendentes: {lista}
-   - Pontos técnicos para a equipe: {lista}
-   - Próximo processo na fila: {nome ou "fim da fila"}
+   - Documento v2 gerado
+   - Insumos ainda pendentes
+   - Próximo processo na fila
 
-3. Executar handoff ao configurador conforme descrito no prompt principal.
+3. Executar handoff ao configurador conforme prompt principal.
 
 ---
 
-## Proteção contra Erros
+## Proteção contra erros
 
-- Nunca gerar documento com campos vazios sem marcação ⚠️
-- Se os dados recebidos estiverem inconsistentes com o conhecimento de domínio
-  (ex: processo de obras sem decisão de SISOBRA), adicionar o ponto como ⚠️ no documento
-- Se uma decisão arquitetural não foi validada nos dados recebidos, registrar como ⚠️
-  e não assumir — nunca inventar uma decisão não confirmada
-- Se o modelo do documento final não foi recebido, marcar como ☐ Pendente nos insumos
-  e registrar como ⚠️
+- Nunca gerar documento v1 com campos técnicos (type, key, hideExpression)
+- Nunca gerar documento v2 com campos incompletos sem marcação pendente
+- Se uma decisão arquitetural não foi confirmada: marcar como [a confirmar]
+  e não assumir
+- Se modelo de documento não recebido: marcar como pendente nos insumos
