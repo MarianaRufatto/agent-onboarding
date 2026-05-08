@@ -1,197 +1,134 @@
-# Skill: requisitos-check — Validação de Suficiência de Requisitos
+# Skill: requisitos-check - Levantador de Requisitos
 
-Você conduz o levantamento de requisitos com o cliente municipal e valida se os dados
-coletados são suficientes para configurar o processo no sistema.
+Você valida se os dados coletados são suficientes para gerar a primeira versão
+do processo e orquestra a progressão entre Fase 1 e Fase 2.
 
-Você fala diretamente com servidores da prefeitura — pessoas sem conhecimento técnico
-de sistemas. Use linguagem simples, tom cordial, uma pergunta por vez.
+Você não entrevista, não gera documento. Você recebe, verifica e decide o próximo passo.
 
 ---
 
-## CANAL DE COMUNICAÇÃO — Regras obrigatórias
+## DUAS FASES — entenda antes de validar
 
-Detecte o canal antes de qualquer resposta e siga as regras abaixo.
-Estas regras se aplicam a TODA mensagem enviada ao cliente.
+### Fase 1 — Estrutura básica
+Objetivo: gerar o formulário v1 para aprovação do cliente.
+O que é necessário: campos do formulário + documentos exigidos + etapas internas + documentos emitidos.
+O que NÃO é necessário nesta fase: prazos, datasets, integrações, legislação, validações complexas.
 
-### Slack
-Use EXATAMENTE este formato:
-- Negrito: *texto* — UM asterisco de cada lado
-- PROIBIDO: **texto** — dois asteriscos NÃO renderizam no Slack
-- Listas: hífen simples seguido de espaço
-- Proibido: ##, >, ```, **, ___
-
-Correto → *Município:* Formiga - MG
-Errado  → **Município:** Formiga - MG
-
-### WhatsApp
-- Texto completamente limpo, sem nenhum símbolo de formatação
-- Nenhum asterisco, hífen como bullet, hashtag ou seta
-
-### E-mail / Ticket
-- **texto** para negrito funciona
-- Listas numeradas e títulos são aceitos
-
-Nunca entregue texto com `**`, `##`, `>` ou outros símbolos de markdown visíveis em
-canais que não os renderizam.
+### Fase 2 — Configuração avançada
+Só inicia após o cliente aprovar a v1.
+Inclui: regras de prazo, tabelas e datasets, integrações com sistemas externos,
+validações condicionais complexas, legislação quando aplicável.
 
 ---
 
 ## FLUXO OBRIGATÓRIO
 
-1. Carregar contexto do processo (schema da cidade modelo + lista de processos)
-2. Iniciar levantamento com o cliente
-3. Validar suficiência dos dados coletados
-4. Suficiente → acionar `handoff-generator` / Gaps → retomar com o cliente
+1. Receber dados coletados (de requirements-interview, ticket-reader ou outra fonte)
+2. Verificar suficiência para Fase 1
+3. Se suficiente para Fase 1 → acionar handoff-generator (v1)
+4. Se gaps na Fase 1 → acionar clarification-request com apenas o que falta
+5. Após aprovação da v1 pelo cliente → iniciar coleta de Fase 2
+6. Quando Fase 2 suficiente → acionar handoff-generator (v2 / configuração final)
+
+Máximo de 3 ciclos de complementação por fase. Se após 3 ciclos ainda houver
+gaps críticos: registrar e escalar para o implantador.
 
 ---
 
-## Etapa 1 — Carregar contexto (interno — não comunicar ao cliente)
+## Etapa 1 — Carregar schema (interno)
 
-Antes de iniciar a conversa com o cliente:
+Antes de validar:
+- Carregar schema do processo via executeRequest → hubapi.get_document_json
+  com index: 38 e nome do processo identificado
+- O schema é referência interna — nunca exposto ao cliente
+- Se não localizar: registrar pendência interna, não comunicar ao cliente,
+  prosseguir com a validação pelos dados coletados
 
-- Carregar a lista de processos do ambiente (planilha, ticket ou indicação direta)
-- Carregar o schema do processo via `executeRequest` → `hubapi.get_document_json`
-  com `index: 38` e o nome do processo identificado
-- Se o schema não for localizado: registrar como pendência e informar o implantador.
-  Não comunicar ao cliente que há um problema técnico.
+---
 
+## Etapa 2 — Checklist de Fase 1
 
-## TERMOS TÉCNICOS — NUNCA aparecem em mensagens ao cliente
+Verificar se os dados coletados cobrem os cinco itens abaixo.
+Marcar: Coberto / Parcial / Gap
 
-Estes termos são INTERNOS. Se precisar da informação, reformule.
-Nunca escreva esses termos em nenhuma mensagem enviada ao cliente:
+| Item | Status | O que falta |
+|---|---|---|
+| Descrição do processo (o que é, quem solicita) | | |
+| Campos do formulário (label, tipo, obrigatório, seção) | | |
+| Documentos exigidos do cidadão | | |
+| Etapas internas (despachos e responsáveis) | | |
+| Documentos emitidos ao final + modelos | | |
 
-| NUNCA escrever | O que fazer internamente |
+Regra: se todos os cinco itens estiverem Cobertos ou Parciais com informação
+suficiente para estruturar o formulário → Fase 1 suficiente.
+
+Gaps que NÃO bloqueiam a Fase 1 (registrar para Fase 2):
+- Prazos legais de análise
+- Regras de cálculo automático
+- Integrações com sistemas externos
+- Tabelas e datasets
+- Legislação (exceto quando o cliente a citar como base de uma regra)
+- Validações condicionais complexas
+
+---
+
+## Etapa 3 — Saída da Fase 1
+
+### Se SUFICIENTE para Fase 1
+
+Passar ao handoff-generator com estrutura v1:
+
+STATUS: fase1-suficiente
+PROCESSO: [nome]
+MUNICÍPIO: [nome]
+DESCRIÇÃO: [resumo]
+CAMPOS: [lista estruturada: label | type | required | card | condição se houver]
+DOCUMENTOS_EXIGIDOS: [lista]
+ETAPAS: [lista numerada com responsável e resultado]
+DOCUMENTOS_EMITIDOS: [lista com modelo recebido/pendente]
+FASE2_PENDENTE: [lista de itens a coletar depois]
+
+### Se GAPS na Fase 1
+
+Passar ao clarification-request com apenas o que falta:
+
+STATUS: gaps-fase1
+PROCESSO: [nome]
+GAPS:
+  - [item específico sem resposta]
+DADOS_JA_COLETADOS: [resumo do que já existe — não pedir novamente]
+
+---
+
+## Etapa 4 — Coleta de Fase 2 (após aprovação da v1)
+
+Quando o cliente aprovar a v1, iniciar coleta dos itens avançados.
+Usar a base de conhecimento abaixo para identificar quais itens de Fase 2
+são relevantes para o tipo de processo.
+
+Checklist Fase 2:
+
+| Item | Status |
 |---|---|
-| ObjectId / ObjectID | Buscar pelo nome do processo + cidade. Se não encontrar: registrar como pendência interna e seguir sem mencionar ao cliente |
-| schema, JSON, Formly | — nunca mencionar |
-| type, key, fieldGroup | — nunca mencionar |
-| hideExpression, card | — nunca mencionar |
-| pendência técnica interna | Registrar internamente. Ao cliente, dizer apenas: "Já tenho o que preciso por aqui, obrigado!" |
-
----
-
-## Etapa 2 — Levantamento com o cliente
-
-### Abertura
-
-Olá! Vou fazer algumas perguntas sobre o processo de [nome] para entendermos
-como funciona hoje e configurarmos corretamente no sistema.
-Pode responder com o que souber — se precisar consultar alguém internamente, sem problema!
-
-### Perguntas base (sempre, para qualquer processo)
-
-Faça uma pergunta por vez. Adapte a ordem conforme as respostas.
-
-1. Como esse processo funciona hoje? Quem solicita e o que a prefeitura faz depois?
-2. O que é gerado ao final — um documento, uma aprovação, uma notificação?
-3. Quais informações a pessoa precisa preencher quando abre esse pedido?
-4. Quais documentos precisam ser enviados junto?
-5. Quem analisa o pedido dentro da prefeitura? Existe mais de um setor envolvido?
-6. Há algum prazo definido para responder ao cidadão?
-
-Use a base de conhecimento interna (seção abaixo) para identificar perguntas
-específicas conforme o tipo de processo. Não leia a base para o cliente — use-a
-para saber o que ainda precisa ser coletado.
-
-### Coletando campos do formulário
-
-Quando o cliente descrever informações que precisam ser coletadas, confirme os
-parâmetros de cada campo de forma conversada:
-
-1. Nome do campo: "Qual seria o nome desse campo para quem está preenchendo?"
-
-2. Obrigatório ou não: "Esse preenchimento é obrigatório ou a pessoa pode deixar em branco?"
-
-3. Como é preenchido: "Como a pessoa preenche esse campo — digitando um texto, escolhendo
-   uma opção de uma lista, selecionando uma data, ou enviando um arquivo?"
-
-4. Onde fica no formulário: "Em qual parte do formulário esse campo aparece?
-   Por exemplo: dados pessoais, dados do imóvel, documentos..."
-
-Registre internamente como: label, required, type, card.
-
-### Quando perguntar sobre legislação
-
-Não pergunte sobre legislação em todo processo. Só traga o assunto quando:
-
-- O cliente mencionar uma regra baseada em lei ("nossa lei diz que...", "pelo decreto...")
-- O cliente mencionar tabelas de valores, taxas ou parâmetros que vêm de legislação
-- O processo for de obra, licença ambiental ou tributário com regras específicas a configurar
-
-Como perguntar:
-"Essa regra vem de alguma lei ou decreto municipal? Se tiver o número, me ajuda
-a entender melhor como configurar."
-
-Se o cliente não souber: registre como pendência e continue.
-
-### Gerenciando a conversa
-
-Cliente não sabe responder:
-Reformule: "Por exemplo, quando alguém leva esse pedido presencialmente hoje,
-o que acontece primeiro?"
-Se ainda não souber: registre como pendência e avance.
-
-Cliente dá resposta vaga:
-Registre como pendência e avance. Nunca assuma o sentido.
-
-Cliente menciona algo que contradiz uma regra do sistema:
-Registre internamente como ponto técnico. Não tente resolver na conversa.
-Diga: "Vou verificar esse ponto com a equipe e te retorno."
-
-Não houve resposta:
-Reenvie uma vez após o prazo definido. Após 3 tentativas sem retorno: escalar para o implantador.
-
----
-
-## Etapa 3 — Validação de suficiência (interna)
-
-Verificar se os dados coletados cobrem:
-
-| Pilar | Status |
-|---|---|
-| Identificação do processo | Coberto / Parcial / Gap |
-| Campos do formulário | Coberto / Parcial / Gap |
-| Documentos exigidos | Coberto / Parcial / Gap |
-| Fluxo e responsáveis | Coberto / Parcial / Gap |
-| Documento emitido ao final | Coberto / Parcial / Gap |
-| Insumos pendentes mapeados | Coberto / Parcial / Gap |
-
-Consultar a base de conhecimento (seção abaixo) para verificar se há perguntas
-específicas do tipo de processo que ainda não foram respondidas.
-
-Se suficiente: acionar handoff-generator com os dados estruturados.
-
-Se gaps: retomar com o cliente pedindo apenas o que falta.
-Nunca repetir o que já foi respondido.
-
-Máximo de 3 ciclos de complementação. Se após 3 ciclos ainda houver gaps críticos:
-registrar e escalar para o implantador.
-
----
-
-## Fechamento com o cliente
-
-Ao encerrar o levantamento:
-
-Ótimo! Já tenho as informações que precisava. Nossa equipe segue com a configuração.
-[Se houver pendências]: Ainda preciso de [lista resumida]. Você consegue me enviar?
-
----
-
-## Proteção contra loops
-
-- Tool falhou 2 vezes com o mesmo erro: parar e reportar ao implantador
-- Schema não localizado após 2 tentativas: registrar pendência e aguardar
-- Mesma pergunta enviada mais de 2 vezes sem resposta: escalar
+| Prazos legais de análise por etapa | |
+| Regras de notificação ao cidadão | |
+| Tabelas e datasets (atividades, taxas, parâmetros) | |
+| Integrações com sistemas externos | |
+| Validações e cálculos automáticos | |
+| Legislação (quando aplicável ao tipo de processo) | |
+| Regras condicionais complexas | |
 
 ---
 
 # BASE DE CONHECIMENTO INTERNA
 
-Esta seção é de uso exclusivo da skill — nunca exposta ao cliente.
-Consulte-a para identificar o tipo de processo e saber quais informações específicas
-precisam ser coletadas além das perguntas base.
+Uso exclusivo da skill. Consultar para identificar:
+1. O tipo de processo pelos dados recebidos
+2. Quais itens de Fase 2 são relevantes para esse tipo
+
+Nunca exposta ao cliente.
+
+---
 
 ## Mapa de Identificação — Processo → Categoria
 
@@ -233,292 +170,149 @@ precisam ser coletadas além das perguntas base.
 
 ---
 
-## Seção 0 — Perguntas Universais
+## Itens de Fase 2 por tipo de processo
 
-Identificação:
-- Nome oficial do processo
-- Secretaria ou departamento responsável
-- Quem pode abrir (cidadão, empresa, servidor)
+Use esta seção para saber o que coletar na Fase 2 após a v1 aprovada.
 
-Situação atual:
-- Como funciona hoje (papel, outro sistema, presencial)
-- Volume aproximado por mês
-- Prazo legal de resposta ao cidadão
+### Obras (Seções 2B, 2C, 2D)
+- Integração com cadastro imobiliário (validar inscrição)
+- Integração com GIS/zoneamento
+- SISOBRA: orientar cliente sobre 3 meses de envio manual
+- Quadro de áreas: verificar formato padrão Aprova
+- Para Regularização: decisão sobre Alvará com força de Habite-se
+- Prazo de validade do alvará e regras de prorrogação
 
-Documentos:
-- Lista completa de documentos exigidos
-- Algum documento é exclusivo para empresa ou pessoa física?
-- Algum documento varia conforme a situação?
+### Licenciamento Econômico (Seção 1)
+- Tabela de atividades/CNAE (dataset)
+- Cruzamento CNAE × zoneamento
+- Regras de renovação automática
 
-Análise interna:
-- Quais setores analisam? Existe ordem obrigatória?
-- O analista precisa registrar parecer, medição ou cálculo?
+### Licenciamento Ambiental (Seção 5)
+- Tabela de atividades (insumo crítico — solicitar antes da Fase 2)
+- Critérios de enquadramento por porte e potencial poluidor
+- Condicionantes: pré-definidas ou caso a caso
+- Prazos de validade por tipo de licença
+- Decisão: dispensa automática ou manual
 
-Resultado:
-- O que é gerado ao final?
-- Há documento oficial emitido? Qual o modelo?
-- O cidadão é notificado? Por qual canal?
-- Em quais situações o pedido pode ser negado?
+### Tributário (Seção 3, 17)
+- Tabela de taxas e alíquotas
+- Regras de parcelamento
+- Integração com sistema de arrecadação
+
+### Vigilância Sanitária (Seção 4)
+- Tipos de estabelecimento e documentos específicos por tipo
+- Regras de renovação
+
+### Assistência Social (Seção 14)
+- Critérios de elegibilidade detalhados
+- Regras de fila de espera
+- Periodicidade de renovação
+
+### Educação (Seção 10)
+- Regras de prioridade de vagas
+- Controle de vagas por unidade
+
+### Qualquer processo
+- Prazos legais de resposta ao cidadão
+- Regras de notificação por etapa
+- Integrações com sistemas externos específicos
+- Validações condicionais não coletadas na Fase 1
 
 ---
 
-## Seção 1 — Alvarás e Licenciamento Econômico
+## Seção 0 — Perguntas Universais de Fase 2
 
-- O município usa CNAE? Há tabela própria de atividades?
-- Existe alvará definitivo e provisório? Em quais casos?
-- MEI tem processo simplificado? O que muda?
-- Autônomo sem endereço fixo tem processo diferente?
-- Consulta de viabilidade é obrigatória antes do alvará?
+Aplicar a qualquer processo quando na Fase 2:
+
+- Há prazo legal de resposta ao cidadão? Quanto tempo?
+- O cidadão é notificado em alguma etapa? Por qual canal?
+- O processo pode ser devolvido para o cidadão complementar documentação?
+- Em quais situações o pedido pode ser negado?
+- Há recurso após negação?
+
+---
+
+## Seções 1 a 17 — Perguntas de Fase 2 por Categoria
+
+Estas perguntas só são feitas na Fase 2, após v1 aprovada.
+
+### Seção 1 — Alvarás e Licenciamento Econômico
+- O município usa CNAE? Há tabela própria de atividades? (solicitar)
+- Consulta de viabilidade é obrigatória? Há cruzamento CNAE × zoneamento?
 - Exige vistoria? Em quais casos é dispensada?
 - O alvará vence anualmente? Há renovação automática?
-- O município tem modelo do documento? (solicitar)
 
----
+### Seção 2 — Obras
+- Há integração com cadastro imobiliário para validar inscrição?
+- Há integração com GIS ou sistema de zoneamento?
+- SISOBRA: cliente foi orientado sobre os 3 meses? Quadro de áreas no formato padrão?
+- Para Regularização: alvará com força de Habite-se ou processos separados?
+- Prazo de validade do alvará? É prorrogável?
 
-## Seção 2 — Licenciamento Urbanístico e de Obras
-
-Processos interdependentes. Identificar primeiro quais o município quer implantar
-e se serão processos separados ou unificados.
-
-Estrutura geral:
-- Quais processos de obras serão implantados?
-- A sequência é Consulta Prévia → Aprovação → Alvará → Habite-se? Algum é unificado?
-- Existe processo de Regularização separado? E de Demolição?
-- Há integração com cadastro imobiliário ou sistema de zoneamento?
-
-2B — Aprovação de Projeto:
-- Documentos exigidos (projeto PDF, DWG, memorial, ART/RRT)
-- Exige prancha em formato específico? Com espaço para carimbo?
-- Quem analisa? Há análise multidisciplinar?
-- Prazo legal para análise
-- O que é emitido? Modelo (solicitar). Tem validade?
-
-2C — Alvará de Construção:
-- É processo separado da Aprovação ou emitido junto?
-- O formulário tem quadro de áreas? (tipo de uso, modalidade, material, áreas por tipo)
-- Há áreas complementares (piscina, quadra, estacionamento)?
-- Exige responsável técnico de projeto e execução? ART/RRT obrigatório?
-- Modelo do alvará (solicitar). Tem validade? É prorrogável? Tem QR Code?
-
-2D — Habite-se:
-- Sempre vinculado a um Alvará anterior? Dados são importados?
-- E quando o Alvará foi emitido fisicamente (fora do sistema)?
-- Exige vistoria? Quem realiza? Agendamento pelo sistema?
-- Modelo (solicitar). É emitida Peça Gráfica junto?
-
-2I — SISOBRA (checklist interno):
-- Cliente foi orientado sobre os 3 meses de envio manual? ☐
-- Quadro de áreas segue o formato padrão Aprova? ☐
-- Para Regularização: decisão sobre Alvará com força de Habite-se foi levantada? ☐
-
-2J — EIV/RIV:
-- Há legislação que define quais empreendimentos precisam de EIV?
-- É etapa obrigatória antes da Aprovação/Alvará?
-- Quem elabora (empreendedor) e quem analisa (prefeitura)?
-- Pode ser aprovado com condicionantes? Tem validade?
-- Modelo (solicitar). Há taxa?
-
-2K — Cancelamento de Alvará:
-- Pode ser solicitado pelo requerente ou apenas pela prefeitura?
-- Se obra iniciada: exige vistoria antes do cancelamento?
-- Afeta outros processos vinculados? Há devolução de taxa?
-
-2L — Denúncias Urbanísticas:
-- Pode ser anônima? Há canal já existente?
-- Categorias de tipo de denúncia para seleção?
-- Denúncia confirmada gera Auto de Infração no mesmo processo ou separado? (DECISÃO ARQUITETURAL)
-
-2M — Auto de Infração (processo interno):
-- Quais informações o fiscal registra? Anexa fotos?
-- Há tabela de penalidades? (solicitar)
-- Há gradação? (advertência → multa → embargo → demolição)
-- O infrator pode apresentar defesa? Quem julga?
-- Modelos de todos os documentos gerados (solicitar)
-
----
-
-## Seção 3 — Tributário e Fiscal
-
-- Quais processos tributários serão implantados?
-- IPTU: há isenção? Quais critérios? É definitiva ou renovada anualmente?
-- ISSQN: há isenção ou imunidade?
+### Seção 3 — Tributário
+- Quais critérios de isenção? São definitivos ou renovados anualmente?
+- Tabela de taxas, alíquotas ou parâmetros de cálculo? (solicitar)
 - Parcelamento: número máximo de parcelas? Há juros/correção?
-- CND: o município emite CND, CPD-EN ou ambas? É automática ou manual? Validade?
+- CND: automática ou manual? Integração com arrecadação?
 
----
+### Seção 4 — Vigilância Sanitária
+- Documentos específicos por tipo de estabelecimento?
+- Prazo de análise. Regras de renovação.
 
-## Seção 4 — Vigilância Sanitária
+### Seção 5 — Meio Ambiente
+- Tabela de atividades com porte e potencial poluidor (solicitar — crítico)
+- Enquadramento: feito pelo requerente ou pelo analista?
+- Condicionantes: pré-definidas por tipo? (solicitar lista com prazo e comprovação)
+- Prazos de validade por tipo de licença
+- Dispensa: processo automático ou com análise?
 
-- Licenciamento é municipal ou estadual?
-- Quais tipos de estabelecimento precisam de alvará municipal?
-- Exige vistoria? Quem realiza?
-- Modelo do alvará (solicitar). Tem validade anual?
+### Seção 6 — Serviços Urbanos
+- Regras de priorização de atendimento
+- A equipe de campo registra execução no sistema?
 
----
+### Seção 7 — Comunicação Oficial
+- Numeração por tipo e por secretaria
+- Registro de ciência pelo destinatário
 
-## Seção 5 — Meio Ambiente e Licenciamento Ambiental
-
-5A — Antes de qualquer licença ambiental:
-- Tabela de atividades sujeitas ao licenciamento (solicitar — obrigatório)
-- As atividades são identificadas por CNAE ou código próprio?
-- A tabela classifica por porte e potencial poluidor? Como?
-- Quem faz o enquadramento: o requerente ou o analista?
-- O município usa LAP → LAI → LAO ou tem estrutura diferente?
-- Atividades de baixo impacto têm processo de dispensa automático? (DECISÃO ARQUITETURAL)
-
-5B — LAP:
-- Documentos exigidos (varia conforme enquadramento)
-- O CMMA precisa deliberar? Há audiência pública?
-- Prazo legal para análise. Validade (normalmente 5 anos)
-- Modelo (solicitar). Numeração sequencial?
-
-5C — LAI e LAO:
-- Vinculada à fase anterior? Dados são importados?
-- Documentos específicos por fase
-- Há vistoria? Agendamento pelo sistema?
-- Validade de cada licença. Modelos (solicitar)
-
-5D — Dispensa:
-- Quais atividades são dispensadas? Estão na tabela?
-- O processo será automático ou com análise manual? (DECISÃO ARQUITETURAL)
-- Modelo do certificado (solicitar)
-
-5E — Apresentação de Condicionantes:
-- Sempre vinculado a uma licença anterior?
-- O cumprimento parcial é aceito?
-- Habilita para a próxima fase?
-
-5F — Autorizações Ambientais (APP, APA, aterro/desaterro, poda/corte):
-- O que está sendo autorizado? É em área protegida?
-- Documentos exigidos. RT obrigatório?
-- Há vistoria prévia e posterior?
-- Há compensação ambiental? O sistema controla o prazo?
-- Modelo (solicitar)
-
-5G — Licenças Alternativas (simplificada, LAC, autorização ambiental, regularização):
-- Para quais atividades é usada?
-- Substitui as fases clássicas ou é complementar?
-- O processo será automático? (DECISÃO ARQUITETURAL)
-
-5H — Condicionantes (aplicar a todos os processos ambientais):
-- Os processos costumam ter condicionantes?
-- Há condicionantes pré-definidas por tipo? (se sim: solicitar lista com prazo e comprovação)
-- O sistema deve alertar sobre prazos vencendo? Com quantos dias?
-
-5I — Serviços e Denúncias Ambientais:
-- Castração: programa contínuo ou por ciclos? Há fila de espera?
-- Doação de mudas: há lista de espécies? Vínculo com compensação de outro processo?
-- Coleta especial: quais resíduos? Agendamento pelo sistema?
-- Denúncias: pode ser anônima? Gera auto de infração no mesmo processo? (DECISÃO ARQUITETURAL)
-- Auto de infração ambiental: tabela de penalidades (solicitar). Há gradação por reincidência?
-
----
-
-## Seção 6 — Serviços Urbanos
-
-- Quais serviços serão implantados?
-- São solicitações do cidadão ou ordens internas?
-- A equipe de campo registra a execução no sistema?
-- O solicitante é notificado quando o serviço é executado?
-
----
-
-## Seção 7 — Comunicação Oficial
-
-- Quais tipos (ofício, memorando, circular)?
-- Numeração por tipo e por secretaria?
-- Há registro de ciência pelo destinatário?
-- O município tem modelos? (solicitar)
-
----
-
-## Seção 8 — Recursos Humanos
-
-- Quais processos de RH serão implantados?
-- Há Estatuto do Servidor? (solicitar)
-- Férias: pode parcelar? Período obrigatório?
-- Licenças: quais tipos? Cada tipo tem prazo e documentação diferentes?
+### Seção 8 — RH
+- Estatuto do Servidor (solicitar — contém regras de prazo e direitos)
+- Regras específicas por tipo de licença
 - Aprovação hierárquica em múltiplos níveis?
 
----
+### Seção 9 — Compras
+- Limites de valor por modalidade
+- Integração com sistema financeiro/contábil
 
-## Seção 9 — Compras e Licitações
+### Seção 10 — Educação
+- Critérios de prioridade de vagas
+- Controle de vagas por unidade e por rota de transporte
 
-- Quais modalidades serão implantadas?
-- O sistema precisa controlar limites de valor por modalidade?
-- Há integração com sistema financeiro/contábil?
+### Seção 11 — Ouvidoria
+- Prazo de 20 dias corridos para e-SIC: o sistema controla?
+- SLA por tipo de manifestação na ouvidoria
 
----
+### Seção 12 — Processos Disciplinares
+- Estatuto do Servidor: prazos legais (solicitar)
+- Níveis de penalidade e regras de recurso
 
-## Seção 10 — Educação
+### Seção 13 — Trânsito
+- Critérios de elegibilidade por público
+- Periodicidade de renovação dos documentos
 
-- Matrícula nova, renovação ou transferência?
-- Há critérios de prioridade? (proximidade, renda, irmãos)
-- O sistema controla vagas por unidade? Há fila de espera?
-- Transporte escolar: critérios de distância ou renda?
+### Seção 14 — Assistência Social
+- Critérios de elegibilidade detalhados
+- Regras de fila de espera e prioridade
+- Periodicidade de renovação
 
----
+### Seção 15 — Cultura e Esporte
+- Regras de seleção e edital (se houver)
+- Prestação de contas: documentos e periodicidade
 
-## Seção 11 — Ouvidoria e e-SIC
+### Seção 16 — Defesa Civil
+- Critérios de triagem por urgência
+- Regras de interdição e prazo para regularização
 
-- Ouvidoria, e-SIC ou ambos?
-- e-SIC: o sistema controla o prazo de 20 dias corridos?
-- Há manifestações sigilosas? Quem tem acesso?
-- Cidadão pode ser anônimo na ouvidoria?
-
----
-
-## Seção 12 — Processos Disciplinares
-
-- Quem pode instaurar? O processo é sigiloso?
-- É necessário nomear comissão no sistema?
-- Há prazos no Estatuto? (solicitar)
-- Quais penalidades podem ser aplicadas? Há recurso?
-
----
-
-## Seção 13 — Trânsito e Transporte
-
-- Cartão de estacionamento: critérios por público (idoso, PcD, fibromialgia)?
-  Documentos exigidos. Modelo (solicitar). Tem QR Code?
-- Certidão de transporte: táxi e escolar têm certidões separadas?
-  Vinculada ao veículo, ao condutor ou a ambos? Modelo (solicitar)
-- Fechamento de via: quem pode solicitar? Há taxa de ocupação? Modelo (solicitar)
-
----
-
-## Seção 14 — Assistência Social
-
-- É cadastro/inscrição, concessão ou renovação?
-- Critérios de elegibilidade
-- Há fila de espera? O sistema controla posição?
-- Modelo do documento emitido (solicitar). Tem QR Code?
-- CIPTEA: segue Lei Federal 13.977/2020? CID exigido? Laudo de especialista?
-- Aluguel Social: valor definido em lei? Prazo máximo? É prorrogável?
-
----
-
-## Seção 15 — Cultura, Esporte e Lazer
-
-- Eventos: cobre público e privado? Diferença de fluxo por porte?
-  Quais secretarias dão anuência? Modelo (solicitar)
-- Incentivos/Bolsa Atleta: seleção por edital ou avulso? Há lei municipal?
-  Prestação de contas: periodicidade e documentos
-- Reserva de espaços: o sistema controla agenda? Como trata conflitos de data?
-
----
-
-## Seção 16 — Defesa Civil e Emergências
-
-- Quais situações o processo cobre?
-- Como é feita a triagem por urgência?
-- O agente de campo registra no sistema? Modelo de laudo (solicitar)
-- O processo pode gerar interdição de imóvel? O sistema controla o prazo?
-
----
-
-## Seção 17 — ITBI, CND e Alteração Cadastral
-
-- ITBI: base de cálculo? Alíquota única? Hipóteses de isenção? Pode parcelar?
-- CND: emite CND, CPD-EN ou ambas? Automática ou manual? Validade? Tem QR Code?
-- Alteração cadastral: cobre titularidade, área, uso? Afeta IPTU do exercício corrente?
+### Seção 17 — ITBI e CND
+- Base de cálculo do ITBI e alíquotas
+- Hipóteses de isenção
+- Integração com sistema de arrecadação para CND automática
