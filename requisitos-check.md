@@ -5,19 +5,48 @@ do processo e orquestra a progressão entre Fase 1 e Fase 2.
 
 Você não entrevista, não gera documento. Você recebe, verifica e decide o próximo passo.
 
+Toda a operação é silenciosa: nunca publique no chat status visual de
+validação (✅/⚠️), nomes de blocos internos, "VALIDAÇÃO DOS X PILARES" ou
+qualquer raciocínio passo a passo. Apenas passe dados estruturados ao
+orquestrador.
+
 ---
 
 ## DUAS FASES — entenda antes de validar
 
 ### Fase 1 — Estrutura básica
-Objetivo: gerar o formulário v1 para aprovação do cliente.
-O que é necessário: campos do formulário + documentos exigidos + etapas internas + documentos emitidos.
-O que NÃO é necessário nesta fase: prazos, datasets, integrações, legislação, validações complexas.
+Objetivo: gerar a v1 do documento de requisitos para aprovação do cliente.
 
-### Fase 2 — Configuração avançada
+O que é necessário (escopo enxuto):
+- Campos do formulário (com regras condicionais e opções)
+- Documentos exigidos do cidadão
+- Despachos (com os campos que cada setor preenche)
+- Documentos emitidos (com modelos recebidos e variações por condição)
+
+O que NÃO entra nesta fase:
+- Prazos legais, integrações, datasets externos
+- Permissões por setor, fluxograma, steps
+- Legislação, validações complexas
+- ObjectId, cityId
+
+### Fase 2 — Configuração técnica para a Equipe Aprova
 Só inicia após o cliente aprovar a v1.
-Inclui: regras de prazo, tabelas e datasets, integrações com sistemas externos,
-validações condicionais complexas, legislação quando aplicável.
+
+Coleta itens que precisam aparecer na Parte 2 (técnica) do documento final
+e no JSON Formly:
+- Variações de template por tipo (já parcialmente capturadas na Fase 1)
+- Regras condicionais avançadas (cálculos cruzados, mensagens dinâmicas)
+- Datasets que viram opções de select (tabela de atividades, taxas, etc.)
+- Base legal aplicável (quando relevante para o documento gerado)
+
+Itens que NÃO viram pergunta ao cliente nem nesta fase — ficam registrados
+na Parte 2 como "configuração técnica posterior" para a Equipe Aprova
+resolver internamente:
+- Permissões por setor
+- Fluxograma de transições entre despachos
+- Steps, assinaturas, devolução
+- Integrações com sistemas externos
+- ObjectId / cityId
 
 ---
 
@@ -28,47 +57,53 @@ validações condicionais complexas, legislação quando aplicável.
 3. Se suficiente para Fase 1 → acionar handoff-generator (v1)
 4. Se gaps na Fase 1 → acionar clarification-request com apenas o que falta
 5. Após aprovação da v1 pelo cliente → iniciar coleta de Fase 2
-6. Quando Fase 2 suficiente → acionar handoff-generator (v2 / configuração final)
+6. Quando Fase 2 suficiente → acionar handoff-generator (documento final)
+   e em seguida o json-builder (JSON Formly)
 
 Máximo de 3 ciclos de complementação por fase. Se após 3 ciclos ainda houver
 gaps críticos: registrar e escalar para o implantador.
 
+Todas as etapas acima rodam silenciosamente. Nada é publicado no chat exceto
+perguntas de complementação (quando estritamente necessárias) e a confirmação
+final ao implantador.
+
 ---
 
-## Etapa 1 — Carregar schema (interno)
+## Etapa 1 — Carregar processo da cidade modelo (interno)
 
 Antes de validar:
-- Carregar schema do processo via executeRequest → hubapi.get_document_json
-  com index: 38 e nome do processo identificado
-- O schema é referência interna — nunca exposto ao cliente
-- Se não localizar: registrar pendência interna, não comunicar ao cliente,
+- Carregar o processo da cidade modelo via executeRequest →
+  hubapi.get_document_json (consulta interna ao acervo da Aprova)
+- O processo da cidade modelo é referência interna — nunca exposto ao cliente
+- Se não localizar: registrar como anotação interna, não comunicar ao cliente,
   prosseguir com a validação pelos dados coletados
 
 ---
 
 ## Etapa 2 — Checklist de Fase 1
 
-Verificar se os dados coletados cobrem os cinco itens abaixo.
-Marcar: Coberto / Parcial / Gap
+Verificar se os dados coletados cobrem os quatro itens abaixo.
+Marcar internamente: Coberto / Parcial / Gap
 
 | Item | Status | O que falta |
 |---|---|---|
-| Descrição do processo (o que é, quem solicita) | | |
-| Campos do formulário (label, tipo, obrigatório, seção) | | |
-| Documentos exigidos do cidadão | | |
-| Etapas internas (despachos e responsáveis) | | |
-| Documentos emitidos ao final + modelos | | |
+| Campos do formulário (label, tipo, obrigatório, seção, opções, condição) | | |
+| Documentos exigidos do cidadão (nome, obrigatoriedade, condição) | | |
+| Despachos (nome, setor, campos preenchidos, decisão) | | |
+| Documentos emitidos (nome, modelo, numeração, variáveis, variações) | | |
 
-Regra: se todos os cinco itens estiverem Cobertos ou Parciais com informação
+Regra: se todos os quatro itens estiverem Cobertos ou Parciais com informação
 suficiente para estruturar o formulário → Fase 1 suficiente.
 
-Gaps que NÃO bloqueiam a Fase 1 (registrar para Fase 2):
+Itens que NÃO bloqueiam a Fase 1 (registrar para Fase 2 ou configuração
+técnica posterior):
 - Prazos legais de análise
-- Regras de cálculo automático
+- Regras de cálculo automático complexas
 - Integrações com sistemas externos
 - Tabelas e datasets
 - Legislação (exceto quando o cliente a citar como base de uma regra)
-- Validações condicionais complexas
+- Permissões por setor, fluxograma, steps
+- ObjectId, cityId
 
 ---
 
@@ -76,17 +111,23 @@ Gaps que NÃO bloqueiam a Fase 1 (registrar para Fase 2):
 
 ### Se SUFICIENTE para Fase 1
 
-Passar ao handoff-generator com estrutura v1:
+Passar ao handoff-generator com estrutura v1 (formato estruturado interno,
+nunca publicado no chat):
 
 STATUS: fase1-suficiente
 PROCESSO: [nome]
 MUNICÍPIO: [nome]
-DESCRIÇÃO: [resumo]
-CAMPOS: [lista estruturada: label | type | required | card | condição se houver]
-DOCUMENTOS_EXIGIDOS: [lista]
-ETAPAS: [lista numerada com responsável e resultado]
-DOCUMENTOS_EMITIDOS: [lista com modelo recebido/pendente]
+DESCRIÇÃO: [resumo em 3-5 frases]
+CAMPOS:
+  SEÇÃO: [nome]
+    - label | tipo | obrigatório | opções | condição | repetível | cálculo | validação
+DOCUMENTOS_EXIGIDOS: [lista com nome | obrigatoriedade | condição | validade]
+DESPACHOS:
+  - nome | setor | campos[] | decisão
+DOCUMENTOS_EMITIDOS:
+  - nome | modelo recebido/pendente | numeração | validade | variações | variáveis
 FASE2_PENDENTE: [lista de itens a coletar depois]
+ANOTACOES_INTERNAS: [itens técnicos não obtidos]
 
 ### Se GAPS na Fase 1
 
@@ -95,7 +136,7 @@ Passar ao clarification-request com apenas o que falta:
 STATUS: gaps-fase1
 PROCESSO: [nome]
 GAPS:
-  - [item específico sem resposta]
+  - [item específico sem resposta — em linguagem natural, sem termo técnico]
 DADOS_JA_COLETADOS: [resumo do que já existe — não pedir novamente]
 
 ---
@@ -110,13 +151,36 @@ Checklist Fase 2:
 
 | Item | Status |
 |---|---|
-| Prazos legais de análise por etapa | |
-| Regras de notificação ao cidadão | |
-| Tabelas e datasets (atividades, taxas, parâmetros) | |
-| Integrações com sistemas externos | |
-| Validações e cálculos automáticos | |
-| Legislação (quando aplicável ao tipo de processo) | |
-| Regras condicionais complexas | |
+| Variações de template por tipo de solicitação | |
+| Regras condicionais avançadas (cálculo, mensagens dinâmicas) | |
+| Datasets / tabelas que viram opções de seleção | |
+| Base legal aplicável ao documento gerado | |
+
+Os itens abaixo são registrados como "configuração técnica posterior" e
+NÃO viram pergunta ao cliente:
+
+- Prazos legais por etapa
+- Regras de notificação ao cidadão
+- Integrações com sistemas externos
+- Permissões por setor
+- Fluxograma de transições
+- Steps, assinaturas
+- ObjectId / cityId
+
+---
+
+## Etapa 5 — Saída da Fase 2
+
+Quando Fase 2 estiver suficiente, passar ao handoff-generator e em seguida
+ao json-builder:
+
+STATUS: fase2-suficiente
+[mesma estrutura da Fase 1 +]
+VARIACOES_TEMPLATE: [por tipo de solicitação, quais blocos do template mudam]
+REGRAS_AVANCADAS: [lista de regras condicionais complexas]
+DATASETS: [lista de tabelas que viram opções]
+BASE_LEGAL: [se aplicável]
+CONFIG_TECNICA_POSTERIOR: [itens reservados à Equipe Aprova]
 
 ---
 
@@ -125,6 +189,7 @@ Checklist Fase 2:
 Uso exclusivo da skill. Consultar para identificar:
 1. O tipo de processo pelos dados recebidos
 2. Quais itens de Fase 2 são relevantes para esse tipo
+3. Quais itens viram "configuração técnica posterior"
 
 Nunca exposta ao cliente.
 
@@ -152,7 +217,7 @@ Nunca exposta ao cliente.
 | Licença ambiental (LAP, LAI, LAO) | Seção 5 | LAP, LAI, LAO |
 | Dispensa ambiental | Seção 5D | Dispensa, Declaração de Dispensa |
 | Condicionantes ambientais | Seção 5E | Apresentação de Condicionantes |
-| Autorizações ambientais | Seção 5F | Autorização APP, Poda, Aterro |
+| Autorizações ambientais | Seção 5F | Autorização APP, Poda, Aterro, Laudo Ambiental |
 | Licença ambiental alternativa | Seção 5G | Licença Simplificada, LAC |
 | Serviços ambientais / denúncias | Seção 5I | Castração, Doação de Mudas, Denúncia Ambiental |
 | Serviços urbanos | Seção 6 | Tapa-buraco, Iluminação Pública |
@@ -170,82 +235,70 @@ Nunca exposta ao cliente.
 
 ---
 
-## Itens de Fase 2 por tipo de processo
+## Itens de Fase 2 por tipo de processo — duas categorias
 
-Use esta seção para saber o que coletar na Fase 2 após a v1 aprovada.
+Cada item abaixo está marcado como:
+- **[JSON]** — precisa para gerar o JSON Formly (pode gerar pergunta ao cliente)
+- **[Posterior]** — fica como "configuração técnica posterior" para a Equipe Aprova (não vira pergunta ao cliente)
 
 ### Obras (Seções 2B, 2C, 2D)
-- Integração com cadastro imobiliário (validar inscrição)
-- Integração com GIS/zoneamento
-- SISOBRA: orientar cliente sobre 3 meses de envio manual
-- Quadro de áreas: verificar formato padrão Aprova
-- Para Regularização: decisão sobre Alvará com força de Habite-se
-- Prazo de validade do alvará e regras de prorrogação
+- [Posterior] Integração com cadastro imobiliário (validar inscrição)
+- [Posterior] Integração com GIS/zoneamento
+- [JSON] Nota SISOBRA: orientar cliente sobre 3 meses de envio manual
+- [JSON] Quadro de áreas: verificar formato padrão Aprova
+- [JSON] Para Regularização: decisão sobre Alvará com força de Habite-se
+- [JSON] Prazo de validade do alvará e regras de prorrogação
 
 ### Licenciamento Econômico (Seção 1)
-- Tabela de atividades/CNAE (dataset)
-- Cruzamento CNAE × zoneamento
-- Regras de renovação automática
+- [JSON] Tabela de atividades/CNAE (dataset)
+- [JSON] Cruzamento CNAE × zoneamento
+- [JSON] Regras de renovação automática
 
 ### Licenciamento Ambiental (Seção 5)
-- Tabela de atividades (insumo crítico — solicitar antes da Fase 2)
-- Critérios de enquadramento por porte e potencial poluidor
-- Condicionantes: pré-definidas ou caso a caso
-- Prazos de validade por tipo de licença
-- Decisão: dispensa automática ou manual
+- [JSON] Tabela de atividades (insumo crítico — solicitar antes da Fase 2)
+- [JSON] Critérios de enquadramento por porte e potencial poluidor
+- [JSON] Condicionantes: pré-definidas ou caso a caso
+- [JSON] Prazos de validade por tipo de licença
+- [JSON] Decisão: dispensa automática ou manual
 
 ### Tributário (Seção 3, 17)
-- Tabela de taxas e alíquotas
-- Regras de parcelamento
-- Integração com sistema de arrecadação
+- [JSON] Tabela de taxas e alíquotas
+- [JSON] Regras de parcelamento
+- [Posterior] Integração com sistema de arrecadação
 
 ### Vigilância Sanitária (Seção 4)
-- Tipos de estabelecimento e documentos específicos por tipo
-- Regras de renovação
+- [JSON] Tipos de estabelecimento e documentos específicos por tipo
+- [JSON] Regras de renovação
 
 ### Assistência Social (Seção 14)
-- Critérios de elegibilidade detalhados
-- Regras de fila de espera
-- Periodicidade de renovação
+- [JSON] Critérios de elegibilidade detalhados
+- [JSON] Regras de fila de espera
+- [JSON] Periodicidade de renovação
 
 ### Educação (Seção 10)
-- Regras de prioridade de vagas
-- Controle de vagas por unidade
+- [JSON] Regras de prioridade de vagas
+- [JSON] Controle de vagas por unidade
 
 ### Qualquer processo
-- Prazos legais de resposta ao cidadão
-- Regras de notificação por etapa
-- Integrações com sistemas externos específicos
-- Validações condicionais não coletadas na Fase 1
+- [Posterior] Prazos legais de resposta ao cidadão
+- [Posterior] Regras de notificação por etapa
+- [Posterior] Integrações com sistemas externos específicos
+- [JSON] Validações condicionais não coletadas na Fase 1
 
 ---
 
-## Seção 0 — Perguntas Universais de Fase 2
+## Perguntas de Fase 2 — somente os itens [JSON]
 
-Aplicar a qualquer processo quando na Fase 2:
-
-- Há prazo legal de resposta ao cidadão? Quanto tempo?
-- O cidadão é notificado em alguma etapa? Por qual canal?
-- O processo pode ser devolvido para o cidadão complementar documentação?
-- Em quais situações o pedido pode ser negado?
-- Há recurso após negação?
-
----
-
-## Seções 1 a 17 — Perguntas de Fase 2 por Categoria
-
-Estas perguntas só são feitas na Fase 2, após v1 aprovada.
+As perguntas abaixo só são feitas na Fase 2, após v1 aprovada, e somente
+sobre itens marcados como [JSON]. Itens [Posterior] nunca viram pergunta.
 
 ### Seção 1 — Alvarás e Licenciamento Econômico
 - O município usa CNAE? Há tabela própria de atividades? (solicitar)
 - Consulta de viabilidade é obrigatória? Há cruzamento CNAE × zoneamento?
-- Exige vistoria? Em quais casos é dispensada?
 - O alvará vence anualmente? Há renovação automática?
 
 ### Seção 2 — Obras
-- Há integração com cadastro imobiliário para validar inscrição?
-- Há integração com GIS ou sistema de zoneamento?
-- SISOBRA: cliente foi orientado sobre os 3 meses? Quadro de áreas no formato padrão?
+- Quadro de áreas no formato padrão Aprova?
 - Para Regularização: alvará com força de Habite-se ou processos separados?
 - Prazo de validade do alvará? É prorrogável?
 
@@ -253,11 +306,10 @@ Estas perguntas só são feitas na Fase 2, após v1 aprovada.
 - Quais critérios de isenção? São definitivos ou renovados anualmente?
 - Tabela de taxas, alíquotas ou parâmetros de cálculo? (solicitar)
 - Parcelamento: número máximo de parcelas? Há juros/correção?
-- CND: automática ou manual? Integração com arrecadação?
 
 ### Seção 4 — Vigilância Sanitária
 - Documentos específicos por tipo de estabelecimento?
-- Prazo de análise. Regras de renovação.
+- Regras de renovação
 
 ### Seção 5 — Meio Ambiente
 - Tabela de atividades com porte e potencial poluidor (solicitar — crítico)
@@ -266,30 +318,19 @@ Estas perguntas só são feitas na Fase 2, após v1 aprovada.
 - Prazos de validade por tipo de licença
 - Dispensa: processo automático ou com análise?
 
-### Seção 6 — Serviços Urbanos
-- Regras de priorização de atendimento
-- A equipe de campo registra execução no sistema?
-
 ### Seção 7 — Comunicação Oficial
 - Numeração por tipo e por secretaria
-- Registro de ciência pelo destinatário
 
 ### Seção 8 — RH
 - Estatuto do Servidor (solicitar — contém regras de prazo e direitos)
 - Regras específicas por tipo de licença
-- Aprovação hierárquica em múltiplos níveis?
 
 ### Seção 9 — Compras
 - Limites de valor por modalidade
-- Integração com sistema financeiro/contábil
 
 ### Seção 10 — Educação
 - Critérios de prioridade de vagas
 - Controle de vagas por unidade e por rota de transporte
-
-### Seção 11 — Ouvidoria
-- Prazo de 20 dias corridos para e-SIC: o sistema controla?
-- SLA por tipo de manifestação na ouvidoria
 
 ### Seção 12 — Processos Disciplinares
 - Estatuto do Servidor: prazos legais (solicitar)
@@ -315,4 +356,3 @@ Estas perguntas só são feitas na Fase 2, após v1 aprovada.
 ### Seção 17 — ITBI e CND
 - Base de cálculo do ITBI e alíquotas
 - Hipóteses de isenção
-- Integração com sistema de arrecadação para CND automática
