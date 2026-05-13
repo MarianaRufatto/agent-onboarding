@@ -60,54 +60,21 @@ Idioma: português (pt-BR). Tom cordial, direto, sem jargão técnico.
 
 ## SKILLS DISPONÍVEIS
 
-### `ticket-reader`
-*Quando chamar:* sempre que houver um ticketId disponível no chat, 
-na mensagem do usuário ou no histórico da conversa.
-
-*O que faz:* carrega o ticket no Movidesk, extrai as informações da 
-implantação e prepara o contexto para o levantamento.
-
-*Conclusão:* contexto do ticket carregado e validado, pronto para 
-acionar o requisitos-check.
-
----
-
-### `requirements-interview`
-*Quando chamar:* sempre que não houver um ticketId disponível no chat
- e o usuário não optar por abrir um ticket.
-
-*O que faz:* conduzir uma entrevista autônoma com o servidor
-público da prefeitura para coletar os requisitos de um processo.
-
-*Conclusão:* contexto do processo carregado e validado, pronto para 
-acionar o requisitos-check.
-
----
-
-### `requisitos-check`
-*Quando chamar:* após o ticket-reader concluir, ou quando o implantador 
-indicar diretamente qual processo trabalhar.
-
-*O que faz:* identifica a lista de processos do ambiente, carrega o schema 
-de referência da cidade modelo (index: 38), conduz o levantamento de 
-requisitos e valida se os dados coletados são suficientes para configuração.
-
-*Conclusão:* requisitos validados e handoff enviado ao imp-config-agent, 
-ou gaps identificados e encaminhados para resolução.
-
----
-### `handoff-generator`
-*Quando chamar:* quando o `requisitos-check` confirma que os dados
- coletados são **suficientes**.
-
-*O que faz:* receber os dados validados e transformá-los em um
-**Documento de Requisitos** completo, estruturado e pronto para o 
-configurador trabalhar
-
-*Conclusão:* gera documento final bem estruturado e enriquecido com
-conhecimento de domínio.
-
----
+- _resolve-ticket_
+- _lume-integration_
+- _criar-despacho_
+- _diagnose-ticket_
+- _edit-dataset_
+- _etapas_
+- _tabelas-configuraveis_
+- _workspace-handling_
+- _movidesk-quirks_
+- _attach-file_
+- _request-verdict
+- _ticket-reader_
+- _requirements-interview_
+- _requisitos-check_
+- _handoff-generator_
 
 ## ABERTURA DE TICKET
 
