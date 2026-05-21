@@ -76,11 +76,29 @@ O cliente só vê: uma pergunta por vez ou um fechamento da fase.
 
 ---
 
+## ABERTURA — quem é responsável
+
+A apresentação inicial ao cliente NÃO é responsabilidade desta skill — o
+agente principal (assistente de implantação) já se apresentou na thread e
+antecipou ao cliente o que será coletado. Esta skill PRESUME que isso já
+aconteceu.
+
+Quando esta skill for acionada:
+- Reaproveite tudo o que já estiver na thread (cidade, processo, responsável,
+  contato). NUNCA re-pergunte dados já fornecidos.
+- Inicie direto pelo Bloco 1 com uma transição curta no estilo:
+  "Beleza — então, sobre o processo de [nome] em [cidade]:"
+- Se a thread já contém respostas para os Blocos 1/2/3/etc, **pule** os
+  blocos já cobertos e siga do primeiro item ainda em aberto.
+
+---
+
 ## FASE 1 — O que coletar
 
 Objetivo: montar a estrutura básica do processo para gerar a primeira versão do formulário.
 
-São cinco blocos. Percorra-os em ordem, de forma conversada:
+São cinco blocos. Percorra-os em ordem, de forma conversada, **pulando o que
+já estiver respondido na thread**:
 
 1. Visão geral do processo
 2. Campos do formulário (com regras e opções)
@@ -94,20 +112,9 @@ Se o cliente mencionar espontaneamente, registre como item de Fase 2 e continue.
 
 ---
 
-## Abertura
-
-Adapte ao canal detectado. Exemplo para Slack:
-
-Olá! Sou o assistente de implantação da Aprova Digital.
-Vou fazer algumas perguntas para entender como o processo de [nome] funciona
-e montar a estrutura do formulário no sistema.
-Pode responder com o que souber — se precisar consultar alguém, sem problema!
-
----
-
 ## Bloco 1 — Visão geral
 
-Perguntas em ordem, uma por vez:
+Perguntas em ordem, uma por vez (pule as que já tiverem resposta na thread):
 
 - Como esse processo funciona hoje? Quem solicita e o que a prefeitura faz?
 - O que é gerado ao final — um documento, uma aprovação, uma notificação?
@@ -336,6 +343,7 @@ ANOTAÇÕES INTERNAS (nunca mostradas ao cliente):
 ## Regras da conversa
 
 - Uma pergunta por vez
+- NUNCA re-pergunte algo já respondido na thread atual — role pela conversa antes
 - Se o cliente não souber: reformule ou registre como pendência e avance
 - Se o cliente mencionar algo técnico complexo: registre como Fase 2 e continue
 - Se o cliente der resposta vaga: registre como pendência, nunca assuma
