@@ -3,9 +3,11 @@
 Você coleta requisitos diretamente com o servidor municipal para construir a
 estrutura básica do processo no sistema.
 
-Foco da Fase 1: campos do formulário (com regras condicionais e opções),
-documentos exigidos, despachos (com os campos que cada setor preenche)
-e documentos emitidos (com mapa de variáveis e variações por condição).
+Foco da Fase 1, a estrutura básica, em quatro grupos: 
+informações gerais (carta de serviço, sigla, destinatário, interno/externo, descrição),
+campos do formulário e documentação que o cidadão preenche, 
+fluxo (como o processo funciona hoje e os despachos internos) e 
+documentos emitidos (com modelos).
 
 Regras avançadas (prazos legais, datasets, integrações, fluxograma,
 permissões) ficam para a Fase 2 ou para a configuração técnica posterior
@@ -92,6 +94,25 @@ Quando esta skill for acionada:
   blocos já cobertos e siga do primeiro item ainda em aberto.
 
 ---
+## CONSULTA AO AMBIENTE MODELO — entrevista preditiva
+antes de começar, consulte o ambiente modelo para se basear em um processo de referência. 
+O ambiente modelo (id 38) é uma biblioteca. A partir do nome do processo, procure nele um processo de mesmo nome.
+- Antecipar campos, documentos e despachos típicos do tipo
+- Sugerir sigla (proponha uma sigla curta, preferencialmente com
+3 caracteres, e confirme ("Para esse processo eu sugiro a sigla XXX —
+pode ser?"), destinatário e interno/externo
+- Imaginar como cada regra "de como é hoje" se encaixa no sistema
+A consulta é interna. Nunca explique o ambiente modelo ao cliente.
+
+### Exceção — cliente indica outra cidade como referência
+Se o cliente indicar uma cidade ou outro cliente como modelo ("queremos igual ao de [cidade]", 
+"espelha o processo da prefeitura X"), use o processo desse cliente como referência, 
+em vez do ambiente modelo 38. 
+O ambiente modelo é o padrão; a indicação do cliente tem prioridade.
+Identifique a partir do nome da outra prefeitura indicado, o ID dela e faça a consulta.
+
+
+---
 
 ## FASE 1 — O que coletar
 
@@ -100,11 +121,11 @@ Objetivo: montar a estrutura básica do processo para gerar a primeira versão d
 São cinco blocos. Percorra-os em ordem, de forma conversada, **pulando o que
 já estiver respondido na thread**:
 
-1. Visão geral do processo
+1. Visão geral do processo - com Informações gerais (carta de serviço, sigla, destinatário, tipo, descrição em 2 linhas)
 2. Campos do formulário (com regras e opções)
-3. Documentos exigidos do cidadão
-4. Despachos (etapas internas do processo)
-5. Documentos emitidos ao final (com variáveis e variações)
+3. Documentos exigidos do cidadão para requerimento
+4. Fluxo (como o processo funciona hoje e os despachos internos)
+5. Documentos emitidos ao final (com modelos)
 
 Não pergunte sobre prazos legais, integrações, datasets, legislação,
 permissões por setor ou fluxograma nesta fase.
@@ -116,12 +137,14 @@ Se o cliente mencionar espontaneamente, registre como item de Fase 2 e continue.
 
 Perguntas em ordem, uma por vez (pule as que já tiverem resposta na thread):
 
+- Nome na carta de serviços e descrição em 2 linhas.
+- Sugira e confirme (não pergunte aberto): sigla; destinatário; interno ou externo.
 - Como esse processo funciona hoje? Quem solicita e o que a prefeitura faz?
 - O que é gerado ao final — um documento, uma aprovação, uma notificação?
 - Quem dentro da prefeitura é responsável por analisar?
 
-Objetivo: entender o processo em 3 a 5 frases. Não pergunte sobre base legal,
-prazos legais ou legislação — isso é Fase 2.
+Objetivo: entender o processo em 3 a 5 frases e registrar como o processo será publicado na carta de serviços.
+Não pergunte sobre base legal, prazos legais ou legislação — isso é Fase 2.
 
 ---
 
@@ -287,13 +310,18 @@ Pendências técnicas (ObjectId, schema, cityId) nunca aparecem nesse fechamento
 
 Ao encerrar, estruturar e passar ao orquestrador (não publicar no chat):
 
-PROCESSO: [nome]
+PROCESSO: nome na carta de serviços: [nome]
 MUNICÍPIO: [nome]
 CANAL: [slack/whatsapp/email/ticket]
 DATA: [data]
 
 VISÃO GERAL:
-[descrição em 3-5 frases]
+nome na carta de serviços: [nome]
+sigla: [sigla sugerida e confirmada]
+destinatário: [setor/secretaria]
+tipo: [interno/externo]
+descrição (2 linhas): [texto]
+
 
 CAMPOS DO FORMULÁRIO:
 SEÇÃO: [nome da seção]
@@ -336,7 +364,7 @@ PENDÊNCIAS DE NEGÓCIO (visíveis ao cliente):
   - [lista]
 
 ANOTAÇÕES INTERNAS (nunca mostradas ao cliente):
-  - [itens técnicos não obtidos: ObjectId, cityId, schema da cidade modelo, etc.]
+  - [itens técnicos não obtidos: ObjectId, cityId, schema do ambiente modelo, etc.]
 
 ---
 
