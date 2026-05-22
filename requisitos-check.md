@@ -55,10 +55,13 @@ resolver internamente:
 1. Receber dados coletados (de requirements-interview, ticket-reader ou outra fonte)
 2. Verificar suficiência para Fase 1
 3. Se suficiente para Fase 1 → acionar handoff-generator (v1)
-4. Se gaps na Fase 1 → acionar clarification-request com apenas o que falta
+4. Se gaps na Fase 1 → devolver a lista de lacunas ao orquestrador. O
+orquestrador roteia conforme a origem: caminho via ticket → pedido
+consolidado (tudo de uma vez); caminho entrevista → retomar a
+entrevista, uma pergunta por vez
 5. Após aprovação da v1 pelo cliente → iniciar coleta de Fase 2
-6. Quando Fase 2 suficiente → acionar handoff-generator (documento final)
-   e em seguida o json-builder (JSON Formly)
+6. Quando Fase 2 suficiente → acionar handoff-generator, que gera o
+documento final e o JSON Formly
 
 Máximo de 3 ciclos de complementação por fase. Se após 3 ciclos ainda houver
 gaps críticos: registrar e escalar para o implantador.
@@ -69,30 +72,36 @@ final ao implantador.
 
 ---
 
-## Etapa 1 — Carregar processo da cidade modelo (interno)
+## Etapa 1 — Carregar processo de referência do ambiente modelo (interno)
 
 Antes de validar:
-- Carregar o processo da cidade modelo via executeRequest →
+- Carregar do ambiente modelo (id 38) um processo de referência 
+de mesmo nome (ou equivalente) via executeRequest →
   hubapi.get_document_json (consulta interna ao acervo da Aprova)
-- O processo da cidade modelo é referência interna — nunca exposto ao cliente
+- O processo do ambiente modelo (id 38) é referência interna — nunca exposto ao cliente
 - Se não localizar: registrar como anotação interna, não comunicar ao cliente,
   prosseguir com a validação pelos dados coletados
-
+- Se o cliente tiver indicado outra cidade ou outro cliente como modelo,
+usar o processo desse cliente como referência, em vez do ambiente 38 —
+a indicação do cliente tem prioridade sobre o ambiente modelo (identifique o ID da outra cidade, através do nome da Prefeitura apresentado)
+- O processo de referência é interno
+  
 ---
 
 ## Etapa 2 — Checklist de Fase 1
 
-Verificar se os dados coletados cobrem os quatro itens abaixo.
+Verificar se os dados coletados cobrem os cinco itens abaixo.
 Marcar internamente: Coberto / Parcial / Gap
 
 | Item | Status | O que falta |
 |---|---|---|
+| Informações gerais (nome na carta de serviço, sigla, destinatário, interno/externo, descrição) | | |
 | Campos do formulário (label, tipo, obrigatório, seção, opções, condição) | | |
 | Documentos exigidos do cidadão (nome, obrigatoriedade, condição) | | |
 | Despachos (nome, setor, campos preenchidos, decisão) | | |
 | Documentos emitidos (nome, modelo, numeração, variáveis, variações) | | |
 
-Regra: se todos os quatro itens estiverem Cobertos ou Parciais com informação
+Regra: se todos os cinco itens estiverem Cobertos ou Parciais com informação
 suficiente para estruturar o formulário → Fase 1 suficiente.
 
 Itens que NÃO bloqueiam a Fase 1 (registrar para Fase 2 ou configuração
@@ -131,7 +140,9 @@ ANOTACOES_INTERNAS: [itens técnicos não obtidos]
 
 ### Se GAPS na Fase 1
 
-Passar ao clarification-request com apenas o que falta:
+Devolver a lista de lacunas ao orquestrador, com apenas o que falta. O
+orquestrador decide como pedir: caminho via ticket, pedido consolidado;
+caminho entrevista, retomando a entrevista uma pergunta por vez.
 
 STATUS: gaps-fase1
 PROCESSO: [nome]
@@ -171,8 +182,8 @@ NÃO viram pergunta ao cliente:
 
 ## Etapa 5 — Saída da Fase 2
 
-Quando Fase 2 estiver suficiente, passar ao handoff-generator e em seguida
-ao json-builder:
+Quando Fase 2 estiver suficiente, passar ao handoff-generator, que gera o
+documento final e, na sequência, o JSON Formly:
 
 STATUS: fase2-suficiente
 [mesma estrutura da Fase 1 +]
