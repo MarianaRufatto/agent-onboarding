@@ -1,12 +1,9 @@
-# Skill: handoff-generator - Gerador do Documento de Requisitos
+# Skill: handoff-generator - Gerador do Documento de Requisitos e do JSON Formly
 
-Esta skill unificada cobre dois estágios do pipeline de implantação:
+Esta skill cobre dois estágios do pipeline de implantação:
 
-- **Fase A — Handoff** (ex-`handoff-generator`): gera o Documento de Requisitos
-  nas versões v1 (aprovação do cliente) e v2 (completo, com Parte 1 para o
-  cliente e Parte 2 técnica para o configurador).
-- **Fase B — JSON Builder** (ex-`json-builder`): a partir do pacote v2 validado,
-  produz o JSON Formly do formulário, o bloco de despachos e o relatório de TODOs.
+- **Fase A — Handoff**: gera o Documento de Requisitos nas versões v1 (aprovação do cliente) e v2 (completo, com Parte 1 para o cliente e Parte 2 técnica para o configurador).
+- **Fase B — Geração do JSON Formly**: a partir do pacote v2 validado, produz o JSON Formly do formulário, o bloco de despachos e o relatório de TODOs.
 
 A geração é silenciosa em ambas as fases: nenhum raciocínio, validação
 intermediária ou status é publicado no chat — apenas o artefato final.
@@ -34,7 +31,7 @@ jamais compartilhados com o cliente.
 |---|---|
 | **A — v1** | Dados iniciais coletados; orquestrador indica `fase1-suficiente` |
 | **A — v2** | Fase 2 completa; orquestrador indica `fase2-suficiente` |
-| **B — JSON Builder** | Após v2 gerado e orquestrador autorizar o handoff técnico |
+| **B — Geração do JSON Formly** | Após v2 gerado e orquestrador autorizar o handoff técnico |
 
 ---
 
@@ -44,7 +41,9 @@ jamais compartilhados com o cliente.
 
 Dados validados pelo `requisitos-check` com:
 
-- Identificação do processo (nome, sigla, cidade, secretaria)
+- Informações gerais do processo: nome na carta de serviço, sigla,
+destinatário, interno ou externo, descrição do assunto em 2 linhas,
+cidade e secretaria
 - Seções e campos do formulário com suas regras
 - Documentos exigidos do cidadão
 - Despachos e campos internos
@@ -65,8 +64,22 @@ Use o template abaixo. Adapte o canal de comunicação (Slack, WhatsApp, e-mail)
 FORMULÁRIO DE REQUERIMENTO — [NOME DO PROCESSO]
 Município: [nome] | Data: [data]
 
+
+
 Esta é a estrutura que vamos configurar no sistema. Confira se está tudo correto
 e me diga se algo precisa ser ajustado.
+
+
+
+─────────────────────────────────────
+INFORMAÇÕES GERAIS
+─────────────────────────────────────
+• Nome na carta de serviços: [nome]
+• Sigla: [sigla]
+• Destinatário: [setor / secretaria]
+• Tipo: [interno / externo]
+• Descrição: [resumo do assunto em 2 linhas]
+
 
 ─────────────────────────────────────
 CAMPOS DO FORMULÁRIO
@@ -165,6 +178,10 @@ para o cliente.
 
 **Município:** [nome]
 **Secretaria:** [nome]
+**Nome na carta de serviços:** [nome]
+**Sigla:** [sigla]
+**Destinatário:** [setor / secretaria]
+**Tipo:** [interno / externo]
 **Data do levantamento:** [data]
 **Status:** [completo / pendente validação]
 
@@ -256,9 +273,9 @@ Apenas pontos que o cliente precisa resolver. Pendências técnicas da Aprova N�
 
 | Item | Valor / Status |
 |---|---|
-| ObjectId do processo (cidade modelo) | [valor ou pendente] |
+| ObjectId do processo (ambiente modelo) | [valor ou pendente] |
 | cityId | [valor ou pendente] |
-| Sigla sugerida do processo | [ex: LICR] |
+| Sigla sugerida do processo (preferencialmente 3 caracteres) | [ex: LIC] |
 | Texto da ação de aprovação | [ex: Deferir] |
 
 **2. Mapa Campo → Estrutura técnica**
@@ -322,17 +339,17 @@ resistências, observações — uso interno]
 2. Sinalizar ao orquestrador:
    - Documento v2 gerado (Parte 1 + Parte 2)
    - Insumos ainda pendentes
-   - **Próximo passo:** orquestrador aciona a Fase B desta skill (JSON Builder)
+   - **Próximo passo:** orquestrador aciona a Fase B desta skill (Geração do JSON Formly)
 
 ---
 
-## FASE B — JSON BUILDER (Geração do JSON Formly)
+## FASE B — GERAÇÃO DO JSON FORMLY
 
 ### Entrada esperada
 
 Pacote estruturado do orquestrador com pelo menos:
 
-- Identificação do processo (nome, sigla, cidade, secretaria)
+- Identificação do processo (nome, sigla, destinatário, interno/externo, cidade, secretaria)
 - ObjectId / cityId (ou marcadores de pendência)
 - Lista de seções (cards) com campos detalhados (vinda da Parte 2 do v2)
 - Lista de documentos exigidos do cidadão
@@ -353,7 +370,7 @@ Pacote estruturado do orquestrador com pelo menos:
     "title": "<Nome do processo>",
     "descricao": "<Descrição curta para o cidadão>",
     "cidade": "<cityId>",
-    "sigla": "<Sigla — ex: LICR>",
+    "sigla": "<Sigla — preferencialmente 3 caracteres, ex: LIC>",
     "approveActionText": "<Deferir / Aprovar / Conceder>",
     "devolverAoUltimo": true,
     "experimentalMode": true,
@@ -617,7 +634,7 @@ O relatório de TODOs inclui:
 - Se decisão arquitetural não confirmada: marcar como `[a confirmar]`
 - Antes de entregar: validar que nenhum termo técnico vazou para a Parte 1
 
-### Fase B (JSON Builder)
+### Fase B (Geração do JSON Formly)
 - Nunca inventar ObjectId / cityId — usar placeholder identificável
 - Nunca inventar pasta de templates — usar placeholder e listar como TODO
 - Nunca inventar opções de select / radio — se faltar, marcar como TODO
